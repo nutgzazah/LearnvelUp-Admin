@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@config "./tailwind.config.ts";
+
+@layer base {
+  /* ☀️ (Light Mode) */
+  :root {
+    --color-primary: 108 92 231;
+    --color-secondary: 253 203 110;
+    --color-background: 244 245 246;
+    --color-text: 0 0 0;
+    --color-card: 244 245 246;
+    --shadow-color: 30 30 30;
+
+    --color-success: 108 231 92;
+    --color-alert: 231 108 92;
+    --color-disabletext: 174 179 191;
+    --color-disablebg: 224 225 228;
+  }
+
+  /* 🌙 (Dark Mode) */
+  .dark:root {
+    --color-primary: 108 92 231;
+    --color-secondary: 253 203 110;
+    --color-background: 30 30 30;
+    --color-text: 255 255 255;
+    --color-card: 30 30 30;
+    --shadow-color: 244 245 246;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text;
+  }
+}
