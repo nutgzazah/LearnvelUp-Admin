@@ -1,16 +1,14 @@
+"use client";
+
 import React from "react";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Home() {
   return (
-    <div className="min-h-screen p-8 flex flex-col items-center gap-10">
-      <div className="absolute top-6 right-6">
-        <ThemeToggle />
-      </div>
+    <div className="min-h-screen p-8 flex flex-col items-center gap-10 ">
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-h1 font-bold text-primary">LearnvelUp Admin 🦦</h1>
-        <p className="text-h4  font-medium">Design System Check</p>
+        <p className="text-h4 font-medium">Design System Check</p>
       </div>
 
       {/* Cards Section */}
