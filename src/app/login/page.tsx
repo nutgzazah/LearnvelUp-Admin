@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { supabase } from "@/lib/supabase";
+import Image from "next/image";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -56,46 +58,72 @@ export default function LoginPage() {
     }
   };
 
+  const [showPassword, setShowPassword] = useState(false);
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="absolute top-6 right-6">
+  <div className="min-h-screen w-full flex items-center justify-center bg-background px-6">
+  <div className="w-full max-w-4xl overflow-hidden rounded-2xl shadow-custom bg-background">
+    <div className="absolute top-6 right-6">
         <ThemeToggle />
       </div>
-      <div className="w-full max-w-md bg-card p-8 rounded-2xl shadow-custom border border-gray-100">
-        <div className="text-center mb-8">
-          <h1 className="text-h3 font-bold text-primary">Admin Login 🦦</h1>
-          <p className="text-body text-gray-400 mt-2 font-normal">
-            ระบบจัดการหลังบ้าน LearnvelUp
-          </p>
-        </div>
+  <div className="flex min-h-[520px]">
+    {/* Left 30% */}
+    <div className="w-[40%] bg-primary flex items-center justify-center px-10">
+      <div className="text-center">
+        <Image
+          src="/images/otter_main_bgyellow.png"
+          alt="Otter"
+          width={200}
+          height={200}
+          priority
+          className="rounded-full overflow-hidden"
+        />
+        <h1 className="text-h2 font-normal text-white">LearnvelUp</h1>
+        <p className="mt-3 text-h5 text-white/70">ระบบจัดการคอร์ส</p>
+      </div>
+    </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+    {/* Right 70% */}
+    <div className="w-[60%] bg-background flex items-center justify-center px-12">
+      <div className="w-full max-w-md">
+        <form onSubmit={handleLogin} className="space-y-12">
+          <div className="text-center mb-16">
+            <h2 className="text-h4 font-semibold text-text ">เข้าสู่ระบบ</h2>
+          </div>
+
           <div className="space-y-2">
-            <label className="text-small font-bold text-text">อีเมล</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-lg bg-background border border-gray-200 focus:border-primary focus:outline-none text-text"
-              placeholder="admin@learnvelup.com"
+              className="w-full px-4 py-3 rounded-full bg-white border border-black/10 focus:border-black/20 focus:outline-none text-black shadow-sm"
+              placeholder="อีเมล"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-small font-bold text-text">รหัสผ่าน</label>
+            <div className="relative">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-lg bg-background border border-gray-200 focus:border-primary focus:outline-none text-text"
-              placeholder="••••••••"
+              className="w-full px-4 py-3 rounded-full bg-white border border-black/10 focus:border-black/20 focus:outline-none text-black shadow-sm"
+              placeholder="รหัสผ่าน"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+            </button>
+            </div>
           </div>
 
           {errorMsg && (
-            <div className="p-3 rounded-lg bg-alert/10 text-alert text-small font-medium text-center border border-alert/20">
+            <div className="p-3 rounded-lg bg-red-500/10 text-red-600 text-sm font-medium text-center border border-red-500/20">
               {errorMsg}
             </div>
           )}
@@ -103,12 +131,15 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-lg transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="w-full rounded-full bg-primary hover:opacity-95 text-white font-medium py-3 transition-all shadow-md active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? "กำลังตรวจสอบ..." : "เข้าสู่ระบบ"}
           </button>
         </form>
       </div>
     </div>
+  </div>
+</div>
+</div>
   );
 }

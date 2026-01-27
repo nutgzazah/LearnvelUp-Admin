@@ -2,7 +2,8 @@
 import Link from "next/link"; // อย่าลืม import
 import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
+import { useRouter,usePathname } from "next/navigation";
+import { FiHome, FiBookOpen, FiPlusCircle } from "react-icons/fi";
 
 // สร้าง Client
 const supabase = createClient(
@@ -12,39 +13,75 @@ const supabase = createClient(
 
 export function AdminNavbar() {
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.replace("/login");
   };
 
-  return (
-    <nav className="w-full flex items-center justify-between px-8 py-4 bg-card  shadow-custom">
-      <h2 className="text-h4 font-bold text-primary">Admin Console 🦦</h2>
+  const navClass = (path: string) =>
+  `flex items-center gap-3 px-6 py-3 text-h5 font-semibold transition
+   ${pathname === path
+     ? "bg-secondary text-black"
+     : "text-white hover:bg-secondary"
+   }`;
 
-      <div className="flex items-center gap-4">
-        <div className="flex gap-4 mr-4">
-          <Link href="/" className="font-bold text-text hover:text-primary">
-            Dashboard
-          </Link>
-          <Link
-            href="/courses"
-            className="font-bold text-text hover:text-primary"
-          >
-            Courses
-          </Link>
-        </div>
-        <div className="flex items-center gap-6">
-          {/* ... Theme/Logout ... */}
-        </div>
-        <ThemeToggle />
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-alert text-white rounded-lg text-small font-bold hover:bg-alert/90 transition-all"
-        >
-          Logout
-        </button>
+
+  return (
+  <nav className="fixed left-0 top-0 h-screen w-80 bg-primary text-white shadow-custom flex flex-col">
+  {/* Header */}
+  <div className="px-6 pt-6 pb-4">
+    <h2 className="text-h3 font-bold text-center">ระบบจัดการคอร์ส</h2>
+
+    {/* Profile */}
+    <div className="mt-6 flex flex-col items-center">
+      <div className="w-20 h-20 rounded-full bg-white/15 flex items-center justify-center overflow-hidden">
+        <span className="text-h4">Test</span>
       </div>
-    </nav>
+      <p className="mt-3 text-h4 font-semibold">DevMastery</p>
+      <p className="text-h6 text-white/70">Admin</p>
+    </div>
+  </div>
+
+  {/* Menu */}
+  <div className="mt-12 flex-1 space-y-3">
+    <Link
+      href="/"
+      className={navClass("/")}
+    >
+      <FiHome size={20} className="ml-1 mr-2"/>
+      Dashboard
+    </Link>
+
+    <Link
+      href="/courses"
+      className={navClass("/courses")}
+    >
+      <FiBookOpen size={20} className="ml-1 mr-2" />
+      My Course
+    </Link>
+
+    <Link
+      href="/courses/create"
+      className={navClass("/courses/create")}
+    >
+      <FiPlusCircle size={20} className="ml-1 mr-2"/>
+      Create Course
+    </Link>
+  </div>
+
+  {/* Bottom actions */}
+  <div className="p-6 flex flex-col gap-3">
+    <ThemeToggle />
+
+    <button
+      onClick={handleLogout}
+      className="w-full py-3 rounded-full bg-alert text-white text-small font-bold hover:bg-alert/90 transition"
+    >
+      Log out
+    </button>
+  </div>
+</nav>
   );
 }
