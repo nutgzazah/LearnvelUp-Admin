@@ -3,7 +3,7 @@ import Link from "next/link"; // อย่าลืม import
 import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter,usePathname } from "next/navigation";
-import { FiHome, FiBookOpen, FiPlusCircle } from "react-icons/fi";
+import { FiHome, FiBookOpen, FiPlusCircle, FiUsers } from "react-icons/fi";
 
 // สร้าง Client
 const supabase = createClient(
@@ -47,6 +47,14 @@ export function AdminNavbar() {
   {/* Menu */}
   <div className="mt-12 flex-1 space-y-3">
     <Link
+      href="/teacher"
+      className={navClass("/teacher")}
+    >
+      <FiUsers size={20} className="ml-1 mr-2"/>
+      Teacher
+    </Link>
+
+    <Link
       href="/"
       className={navClass("/")}
     >
@@ -55,16 +63,16 @@ export function AdminNavbar() {
     </Link>
 
     <Link
-      href="/courses"
-      className={navClass("/courses")}
+      href="/course"
+      className={navClass("/course")}
     >
       <FiBookOpen size={20} className="ml-1 mr-2" />
       My Course
     </Link>
 
     <Link
-      href="/courses/create"
-      className={navClass("/courses/create")}
+      href="/create"
+      className={navClass("/create")}
     >
       <FiPlusCircle size={20} className="ml-1 mr-2"/>
       Create Course
