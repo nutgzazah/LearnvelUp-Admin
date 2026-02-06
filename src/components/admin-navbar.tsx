@@ -51,7 +51,7 @@ export function AdminNavbar() {
       className={navClass("/teacher")}
     >
       <FiUsers size={20} className="ml-1 mr-2"/>
-      Teacher
+      จัดการผู้สอน
     </Link>
 
     <Link
@@ -59,7 +59,7 @@ export function AdminNavbar() {
       className={navClass("/")}
     >
       <FiHome size={20} className="ml-1 mr-2"/>
-      Dashboard
+      แดชบอร์ด
     </Link>
 
     <Link
@@ -67,7 +67,7 @@ export function AdminNavbar() {
       className={navClass("/course")}
     >
       <FiBookOpen size={20} className="ml-1 mr-2" />
-      My Course
+      คอร์สของฉัน
     </Link>
 
     <Link
@@ -75,7 +75,7 @@ export function AdminNavbar() {
       className={navClass("/create")}
     >
       <FiPlusCircle size={20} className="ml-1 mr-2"/>
-      Create Course
+      สร้างคอร์ส
     </Link>
   </div>
 

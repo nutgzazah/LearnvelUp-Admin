@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   getCourses,
   createCourse,
@@ -19,6 +20,7 @@ export default function CreatecoursesPage() {
   const [coverPreview, setCoverPreview] = useState<string>("");
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categoryText, setCategoryText] = useState("");
+  const router = useRouter();
 
   const CATEGORY_LIST = [
     "แพทย์",
@@ -202,7 +204,7 @@ export default function CreatecoursesPage() {
 
             {/* กล่องคลิกเพื่ออัปโหลด */}
             <label className="block cursor-pointer">
-              <div className="w-full rounded-2xl border-2 border-dashed border-gray-400 bg-background p-6 flex items-center justify-center gap-3 hover:bg-gray-800 transition">
+              <div className="w-full rounded-2xl border-2 border-dashed border-gray-400 bg-background p-6 flex items-center justify-center gap-3 transition">
                 <FiUploadCloud className="text-3xl text-gray-500" />
               </div>
 
@@ -225,7 +227,7 @@ export default function CreatecoursesPage() {
               />
             </label>
 
-            {/* preview รูป (ถ้ามี) */}
+            {/* preview รูป */}
             {coverPreview && (
               <div className="mt-2">
                 <img
@@ -273,17 +275,11 @@ export default function CreatecoursesPage() {
               </button>
             )}
 
-            
-
             <button
               type="submit"
-              className={`px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer transition ${
-                isEditing
-                  ? "bg-amber-500 hover:bg-amber-600"
-                  : "bg-primary hover:bg-primary/90"
-              }`}
-            >
-              {isEditing ? "บันทึกการแก้ไข" : "ถัดไป"}
+              onClick={() => router.push("/create/content")}
+              className="px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer transitionbg-primary bg-primary hover:bg-primary/90">
+              ถัดไป
             </button>
           </div>
         </form>
@@ -299,9 +295,6 @@ export default function CreatecoursesPage() {
         onConfirm={(selected) => {
           const text = selected.join(", ");
           setCategoryText(text);
-
-          // ถ้าต้องการเก็บลง form ด้วย (กรณี CoursePayload มี field category จริง)
-          // setForm((prev) => ({ ...prev, category: text }));
 
           setCategoryOpen(false);
         }}

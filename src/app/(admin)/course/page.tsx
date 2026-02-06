@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getCourses } from "@/services";
 import { Course } from "@/types";
 import { CourseCards } from "@/components/course-card";
 
 export default function CoursesPage() {
+  const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +24,6 @@ export default function CoursesPage() {
 
   return (
     <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-100 pr-20">
-      {/* Header */}
       <div>
         <h1 className="text-h2 font-bold text-primary">คอร์สเรียนของฉัน</h1>
       </div>
@@ -32,9 +33,10 @@ export default function CoursesPage() {
       ) : (
         <CourseCards
           courses={courses}
-          onClickCourse={(c) => {
-            // ใส่ action ตอนกดการ์ด เช่น ไปหน้า detail
-            console.log("click course:", c);
+          onClickCourse={(c: any) => {
+            const id = c?.id ?? c?.course_id ?? c?.slug; // เลือกตัวที่มีจริงในข้อมูลคุณ
+            if (!id) return;
+            router.push(`/course/${id}`);
           }}
         />
       )}
