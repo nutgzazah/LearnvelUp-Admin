@@ -77,7 +77,7 @@ export function CourseCards({ courses, onClickCourse }: CourseCardsProps) {
             onClick={() => onClickCourse?.(course)}
             className={[
               "w-full text-left",
-              "rounded-2xl border-2 border-primary/70 bg-white",
+              "rounded-2xl border-2 border-primary/70 bg-background",
               "shadow-sm hover:shadow-md transition",
               "overflow-hidden",
             ].join(" ")}
@@ -93,7 +93,7 @@ export function CourseCards({ courses, onClickCourse }: CourseCardsProps) {
                     className="h-[260px] md:h-[300px] w-full object-cover"
                   />
                 ) : (
-                  <div className="h-[260px] w-full flex items-center justify-center text-muted-foreground">
+                  <div className="h-[260px] w-full flex items-center justify-center text-foreground">
                     No Image
                   </div>
                 )}
@@ -102,16 +102,16 @@ export function CourseCards({ courses, onClickCourse }: CourseCardsProps) {
               {/* Right content */}
               <div className="flex-1 p-6 relative">
                 <div className="pr-6">
-                  <h3 className="text-h4 font-bold text-black line-clamp-2">
+                  <h3 className="text-h4 font-bold text-foreground line-clamp-2">
                     {course.title ?? course.name ?? "-"}
                   </h3>
 
                   <div className="mt-3 text-small">
                     <span className="font-semibold text-primary">รายละเอียด :</span>{" "}
-                    <span className="text-muted-foreground">
+                    <span className="text-foreground">
                       {owner ? (
                         <>
-                          🚀 <span className="text-foreground/90">{owner}</span> คือ
+                          <span className="text-foreground">{owner}</span> คือ
                         </>
                       ) : (
                         "—"
@@ -119,7 +119,7 @@ export function CourseCards({ courses, onClickCourse }: CourseCardsProps) {
                     </span>
                   </div>
 
-                  <p className="mt-2 text-body text-muted-foreground line-clamp-2">
+                  <p className="mt-2 text-body text-foreground line-clamp-2">
                     {desc || "—"}
                   </p>
 
@@ -143,7 +143,7 @@ export function CourseCards({ courses, onClickCourse }: CourseCardsProps) {
                 </div>
 
                 {/* students bottom-right */}
-                <div className="absolute right-6 bottom-5 text-small text-black">
+                <div className="absolute right-6 bottom-5 text-small text-foreground">
                   นักเรียน{" "}
                   <span className="font-semibold text-foreground">
                     {typeof students === "number"
