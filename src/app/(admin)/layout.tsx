@@ -39,16 +39,18 @@ export default function AdminLayout({
     );
   }
 
-  // 👇 Show Navbar and (children) content
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* 1. show Navbar to all page */}
-      <div className="sticky top-0 z-50">
-        <AdminNavbar />
-      </div>
 
-      {/* 2. children content */}
-      <main className="flex-1 p-8">{children}</main>
+  return (
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar */}
+      <aside className="w-[280px] shrink-0">
+        <AdminNavbar />
+      </aside>
+
+      {/* Content */}
+      <main className="flex-1 p-8 overflow-x-hidden">
+        {children}
+      </main>
     </div>
   );
 }

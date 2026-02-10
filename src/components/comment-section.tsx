@@ -6,7 +6,7 @@ import { FiSend } from "react-icons/fi";
 type CommentCard = {
   partNo: number;
   content: string;
-  usernameLabel?: string; // default: "ชื่อผู้ใช้"
+  usernameLabel?: string;
 };
 
 type CommentSectionProps = {
@@ -44,7 +44,7 @@ export function CommentSection({
         {comments.map((c) => (
           <div
             key={c.partNo}
-            className="rounded-2xl border-2 border-indigo-500/70 bg-white p-6 shadow-sm"
+            className="rounded-2xl border-2 border-indigo-500/70 bg-background p-6 shadow-sm"
           >
             <div className="space-y-3">
               <p className="text-lg font-semibold text-foreground">
@@ -67,17 +67,17 @@ export function CommentSection({
                   setReply((prev) => ({ ...prev, [c.partNo]: e.target.value }))
                 }
                 placeholder="ตอบกลับความคิดเห็น"
-                className="h-11 w-full rounded-xl border-2 border-indigo-500/70 bg-white px-4 text-sm outline-none focus:border-indigo-600"
+                className="h-11 w-full rounded-xl border-2 border-indigo-500/70 bg-background px-4 text-sm outline-none focus:border-indigo-600"
               />
 
               <button
                 type="button"
                 onClick={() => handleSubmit(c.partNo)}
-                className="h-11 w-11 shrink-0 rounded-xl border-2 border-indigo-500/70 bg-white flex items-center justify-center transition hover:bg-indigo-50 active:scale-[0.98]"
+                className="h-11 w-11 shrink-0 rounded-xl border-2 border-indigo-500/70 bg-background flex items-center justify-center cursor-pointer active:scale-[0.98]"
                 aria-label="ส่งคำตอบกลับ"
                 title="ส่ง"
               >
-                <FiSend className="text-indigo-700" />
+                <FiSend className="text-indigo-500" />
               </button>
             </div>
           </div>

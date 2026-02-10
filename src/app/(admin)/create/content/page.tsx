@@ -26,7 +26,7 @@ export default function ContentPage() {
   const addEpisode = () => setEpisodeCount((n) => n + 1);
 
   return (
-    <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-100 pr-20">
+    <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-20 pr-20">
       {/* Back button */}
       <div>
         <button
