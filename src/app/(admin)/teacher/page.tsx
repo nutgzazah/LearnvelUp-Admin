@@ -53,10 +53,8 @@ export default function TeacherPage() {
   };
 
   return (
-    <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-100 pr-20">
-      
-
-      {/* ... ส่วนสร้างคนสอนใหม่ของคุณเหมือนเดิม ... */}
+    // <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-100 pr-20 ml-8">
+    <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-20 pr-20">
       <div className="space-y-6 ">
         <h1 className="text-h2 font-bold text-primary mt-16 mb-8">สร้างคนสอนใหม่</h1>
 
@@ -82,7 +80,7 @@ export default function TeacherPage() {
               <button
                 type="button"
                 onClick={onPickImage}
-                className="border-2 bg-background rounded-md px-4 py-2 hover:bg-black/5 nt-6"
+                className="border-2 bg-background rounded-md px-4 py-2 hover:bg-black/5 nt-6 cursor-pointer"
               >
                 อัปโหลดรูปโปรไฟล์
               </button>

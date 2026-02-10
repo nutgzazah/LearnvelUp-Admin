@@ -19,7 +19,9 @@ export default function CreatecoursesPage() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string>("");
   const [categoryOpen, setCategoryOpen] = useState(false);
-  const [categoryText, setCategoryText] = useState("");
+  const [categoryTarget, setCategoryTarget] = useState<"primary" | "secondary">("primary");
+  const [primaryCategory, setPrimaryCategory] = useState<string>("");
+  const [secondaryCategories, setSecondaryCategories] = useState<string[]>([]);
   const router = useRouter();
 
   const CATEGORY_LIST = [
@@ -88,11 +90,11 @@ export default function CreatecoursesPage() {
 
     try {
       if (isEditing && editId) {
-        // 🟡 Edit mode
+        // Edit mode
         await updateCourse(editId, form);
         alert("แก้ไขข้อมูลเรียบร้อย!");
       } else {
-        // 🟢 Add mode
+        // Add mode
         await createCourse(form);
         alert("เพิ่มคอร์สเรียบร้อย! 🎉");
       }
@@ -130,13 +132,12 @@ export default function CreatecoursesPage() {
   };
 
   return (
-    <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-100 pr-20">
+    <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-20 pr-20">
       {/* Header */}
       <div>
         <h1 className="text-h2 font-bold text-primary">สร้างคอร์สเรียน</h1>
       </div>
 
-      {/* 📝 form (Dynamic: change header and title) */}
       <div
         className={`p-6 rounded-2xl shadow-custom border transition-colors ${
           isEditing
@@ -243,11 +244,14 @@ export default function CreatecoursesPage() {
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="block text-h6 font-bold mb-2">หมวดหมู่ (ไม่เกิน 2) *</label>
-
+            {/* ===== หมวดหมู่หลัก ===== */}
+            <label className="block text-h6 font-bold mb-2">หมวดหมู่หลัก</label>
             <button
               type="button"
-              onClick={() => setCategoryOpen(true)}
+              onClick={() => {
+                setCategoryTarget("primary");
+                setCategoryOpen(true);
+              }}
               className="px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer transition bg-primary hover:bg-primary/90 mt-2 mb-6"
             >
               เพิ่มหมวดหมู่
@@ -256,13 +260,45 @@ export default function CreatecoursesPage() {
             <input
               type="text"
               className="w-full p-2 border rounded-lg bg-background"
-              value={categoryText}
-              onChange={(e) => setCategoryText(e.target.value)}
+              value={primaryCategory}
+              readOnly
               placeholder="เลือกหมวดหมู่จากปุ่ม"
               required
             />
-          </div>
 
+            {/* ===== หมวดหมู่รอง ===== */}
+            <label className="block text-h6 font-bold mb-2 mt-6">
+              หมวดหมู่รอง (ไม่เกิน 2 หมวดหมู่)
+            </label>
+
+            <button
+              type="button"
+              disabled={!primaryCategory}
+              onClick={() => {
+                if (!primaryCategory) return; // กันไว้ซ้ำ
+                setCategoryTarget("secondary");
+                setCategoryOpen(true);
+              }}
+              className={`px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer transition mt-2 mb-6
+                ${primaryCategory ? "bg-primary hover:bg-primary/90" : "bg-gray-400 cursor-not-allowed"}`}
+            >
+              เพิ่มหมวดหมู่
+            </button>
+
+            {!primaryCategory && (
+              <p className="text-sm text-gray-500 -mt-4 mb-3">
+                * กรุณาเลือกหมวดหมู่หลักก่อน ถึงจะเลือกหมวดหมู่รองได้
+              </p>
+            )}
+
+            <input
+              type="text"
+              className="w-full p-2 border rounded-lg bg-background"
+              value={secondaryCategories.join(", ")}
+              readOnly
+              placeholder="เลือกหมวดหมู่รองจากปุ่ม"
+            />
+          </div>
 
           <div className="md:col-span-2 text-right mt-2 flex justify-end gap-3">
             {isEditing && (
@@ -283,22 +319,38 @@ export default function CreatecoursesPage() {
             </button>
           </div>
         </form>
+
       <CategoryPopup
         open={categoryOpen}
-        categories={CATEGORY_LIST}
+        categories={
+          categoryTarget === "secondary"
+            ? CATEGORY_LIST.filter((c) => c !== primaryCategory) // กันไม่ให้ซ้ำหมวดหลัก
+            : CATEGORY_LIST
+        }
         defaultSelected={
-          categoryText
-            ? categoryText.split(",").map((s) => s.trim()).filter(Boolean)
-            : []
+          categoryTarget === "primary"
+            ? (primaryCategory ? [primaryCategory] : [])
+            : secondaryCategories
         }
         onClose={() => setCategoryOpen(false)}
         onConfirm={(selected) => {
-          const text = selected.join(", ");
-          setCategoryText(text);
+          if (categoryTarget === "primary") {
+            // หมวดหลักเอาแค่ 1
+            const one = selected[0] ?? "";
+            setPrimaryCategory(one);
+
+            // ถ้าเคยเลือกหมวดรองแล้วมันดันซ้ำกับหมวดหลักใหม่ -> ลบทิ้ง
+            setSecondaryCategories((prev) => prev.filter((x) => x !== one));
+          } else {
+            // หมวดรองไม่เกิน 2 และห้ามซ้ำหมวดหลัก
+            const filtered = selected.filter((x) => x !== primaryCategory).slice(0, 2);
+            setSecondaryCategories(filtered);
+          }
 
           setCategoryOpen(false);
         }}
       />
+
       </div>
         
     </div>

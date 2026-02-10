@@ -1,72 +1,72 @@
 "use client";
 
 import React from "react";
+import { FiBookOpen, FiEye } from "react-icons/fi";
+import { FaCoins } from "react-icons/fa";
 
 export default function Home() {
   return (
-    <div className="min-h-screen p-8 flex flex-col items-center gap-10 ">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-h1 font-bold text-primary">LearnvelUp Admin 🦦</h1>
-        <p className="text-h4 font-medium">Design System Check</p>
-      </div>
+    <div className="min-h-screen w-full px-8 py-8 ml-8">
+      {/* Wrapper ให้เต็มจอ */}
+      <div className="w-full h-full space-y-8">
+        {/* ===== แถวบน: 3 กล่อง ===== */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="rounded-2xl border-2 border-orange-400 bg-orange-50 p-10 shadow-sm">
+            <div className="text-center text-black text-h3 font-semibold">
+              จำนวนเหรียญที่ได้รับ
+            </div>
 
-      {/* Cards Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-        {/* Card 1: Primary Theme */}
-        <div className="bg-card p-6 rounded-2xl shadow-custom border-l-4 border-primary">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-h3 font-bold ">Users</h3>
-            <span className="text-2xl">👥</span>
+            <div className="mt-8 flex items-center justify-center gap-7">
+              <div className="h-16 w-16 rounded-full bg-black flex items-center justify-center">
+                <FaCoins className="text-white text-h4 -mt-0.5" />
+              </div>
+
+              <div className="text-h3 font-medium text-black tracking-wide">
+                999,999,999
+              </div>
+            </div>
           </div>
-          <p className="text-h1 font-bold text-primary">1,250</p>
-          <p className="text-small text-gray-400 italic">
-            Active users this month
-          </p>
-        </div>
 
-        {/* Card 2: Secondary Theme */}
-        <div className="bg-card p-6 rounded-2xl shadow-custom border-l-4 border-secondary">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-h3 font-bold ">Revenue</h3>
-            <span className="text-2xl">💰</span>
+          {/* กล่อง 2 */}
+          <div className="rounded-2xl border-2 border-black bg-neutral-100 p-10 shadow-sm">
+            <div className="text-center text-black text-h3 font-semibold">
+              จำนวนคอร์ส
+            </div>
+
+            <div className="mt-8 flex items-center justify-center gap-7">
+              <div className="h-16 w-16 rounded-full bg-black flex items-center justify-center">
+                <FiBookOpen className="text-white" size={32} />
+              </div>
+
+              <div className="text-h3 text-black font-medium tracking-wide">
+                12
+              </div>
+            </div>
           </div>
-          <p className="text-h1 font-bold text-secondary">฿54,000</p>
-          <p className="text-small text-gray-400 italic">Updated just now</p>
-        </div>
-      </div>
 
-      {/* Button & Typography Check */}
-      <div className="w-full max-w-4xl space-y-4">
-        <h5 className="text-h5 font-bold ">Buttons & States</h5>
-        <div className="flex flex-wrap gap-4">
-          <button className="px-6 py-3 bg-primary  rounded-lg font-bold shadow-lg hover:opacity-90 transition">
-            Primary Button
-          </button>
-          <button className="px-6 py-3 bg-secondary  rounded-lg font-bold shadow-md hover:opacity-90 transition">
-            Secondary Button
-          </button>
-          <button className="px-6 py-3 bg-alert  rounded-lg font-bold shadow-md">
-            Delete Action
-          </button>
-          <button className="px-6 py-3 bg-disablebg text-disabletext rounded-lg font-medium cursor-not-allowed">
-            Disabled
-          </button>
-        </div>
-      </div>
+          {/* กล่อง 3 */}
+          <div className="rounded-2xl border-2 border-purple-600 bg-purple-100 p-10 shadow-sm">
+            <div className="text-center text-h3 text-black font-semibold">
+              ยอดการเข้าชมทั้งหมด
+            </div>
 
-      {/* Font Weight Check */}
-      <div className="w-full max-w-4xl p-6 bg-card rounded-xl shadow-custom">
-        <p className="text-body ">K2D Regular: สวัสดีชาวโลก (ตัวปกติ)</p>
-        <p className="text-body font-medium">
-          K2D Medium: สวัสดีชาวโลก (ตัวหนาปานกลาง)
-        </p>
-        <p className="text-body font-bold text-primary">
-          K2D Bold: สวัสดีชาวโลก (ตัวหนาสีหลัก)
-        </p>
-        <p className="text-body italic text-secondary">
-          K2D Italic: สวัสดีชาวโลก (ตัวเอียงสีรอง)
-        </p>
+            <div className="mt-8 flex items-center justify-center gap-7">
+              <div className="h-16 w-16 rounded-full bg-black flex items-center justify-center">
+                <FiEye className="text-white" size={32} />
+              </div>
+
+              <div className="text-h3 text-black font-medium tracking-wide">
+                999,999,999
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ===== แถวล่าง: 2 กล่อง (ให้กินพื้นที่ที่เหลือ) ===== */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="rounded-2xl border-2 border-black bg-white shadow-sm min-h-[420px]" />
+          <div className="rounded-2xl border-2 border-black bg-white shadow-sm min-h-[420px]" />
+        </div>
       </div>
     </div>
   );

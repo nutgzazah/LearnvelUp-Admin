@@ -23,7 +23,7 @@ export default function CoursesPage() {
   }, []);
 
   return (
-    <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-100 pr-20">
+    <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-20 pr-20">
       <div>
         <h1 className="text-h2 font-bold text-primary">คอร์สเรียนของฉัน</h1>
       </div>
