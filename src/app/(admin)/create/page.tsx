@@ -149,7 +149,7 @@ export default function CreatecoursesPage() {
           <h3
             className={`text-h4 font-bold ${isEditing ? "text-amber-600" : "text-text"}`}
           >
-            {isEditing ? "✏️ แก้ไขข้อมูลคอร์ส" : "เพิ่มคอร์สใหม่"}
+            {isEditing ? "แก้ไขข้อมูลคอร์ส" : "เพิ่มคอร์สใหม่"}
           </h3>
           {isEditing && (
             <button
@@ -299,7 +299,18 @@ export default function CreatecoursesPage() {
               placeholder="เลือกหมวดหมู่รองจากปุ่ม"
             />
           </div>
-
+          
+          <div className="space-y-1 md:col-span-2">
+              <label className="block text-h6 font-bold mb-4">ราคาคอร์ส</label>
+              <input
+                type="text"
+                className="w-full p-2 border rounded-lg bg-background"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                required
+              />
+          </div>
+          
           <div className="md:col-span-2 text-right mt-2 flex justify-end gap-3">
             {isEditing && (
               <button
@@ -318,6 +329,7 @@ export default function CreatecoursesPage() {
               ถัดไป
             </button>
           </div>
+          
         </form>
 
       <CategoryPopup

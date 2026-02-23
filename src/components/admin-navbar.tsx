@@ -4,6 +4,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter,usePathname } from "next/navigation";
 import { FiHome, FiBookOpen, FiPlusCircle, FiUsers } from "react-icons/fi";
+import { useSearchParams } from "next/navigation";
 
 // สร้าง Client
 const supabase = createClient(
@@ -15,17 +16,26 @@ export function AdminNavbar() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const searchParams = useSearchParams();
+  const instructorName = searchParams.get("instructorName");
+  const instructorId = searchParams.get("instructorId");
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.replace("/login");
   };
 
   const navClass = (path: string) =>
-  `flex items-center gap-3 px-6 py-3 text-h5 font-semibold transition
-   ${pathname === path
-     ? "bg-secondary text-black"
-     : "text-white hover:bg-secondary"
-   }`;
+    `flex items-center gap-3 px-6 py-3 text-h5 font-semibold transition
+    ${
+      path === "/"
+        ? pathname === "/"
+          ? "bg-secondary text-black"
+          : "text-white hover:bg-secondary"
+        : pathname.startsWith(path)
+          ? "bg-secondary text-black"
+          : "text-white hover:bg-secondary"
+    }`;
 
 
   return (
@@ -39,7 +49,7 @@ export function AdminNavbar() {
       <div className="w-20 h-20 rounded-full bg-white/15 flex items-center justify-center overflow-hidden">
         <span className="text-h4">Test</span>
       </div>
-      <p className="mt-3 text-h4 font-semibold">DevMastery</p>
+      <p className="mt-3 text-h4 font-semibold"> {instructorName ?? "-"} </p>
       <p className="text-h6 text-white/70">Admin</p>
     </div>
   </div>
@@ -55,7 +65,11 @@ export function AdminNavbar() {
     </Link>
 
     <Link
-      href="/"
+      href={
+        instructorId
+          ? `/?instructorId=${encodeURIComponent(instructorId)}&instructorName=${encodeURIComponent(instructorName ?? "")}`
+          : "/"
+      }
       className={navClass("/")}
     >
       <FiHome size={20} className="ml-1 mr-2"/>
@@ -63,7 +77,11 @@ export function AdminNavbar() {
     </Link>
 
     <Link
-      href="/course"
+      href={
+        instructorId
+          ? `/course?instructorId=${encodeURIComponent(instructorId)}&instructorName=${encodeURIComponent(instructorName ?? "")}`
+          : "/course"
+      }
       className={navClass("/course")}
     >
       <FiBookOpen size={20} className="ml-1 mr-2" />
@@ -71,7 +89,11 @@ export function AdminNavbar() {
     </Link>
 
     <Link
-      href="/create"
+      href={
+        instructorId
+          ? `/create?instructorId=${encodeURIComponent(instructorId)}&instructorName=${encodeURIComponent(instructorName ?? "")}`
+          : "/create"
+      }
       className={navClass("/create")}
     >
       <FiPlusCircle size={20} className="ml-1 mr-2"/>
