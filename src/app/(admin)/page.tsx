@@ -7,7 +7,6 @@ import { FaCoins } from "react-icons/fa";
 export default function Home() {
   return (
     <div className="min-h-screen w-full px-8 py-8 ml-8">
-      {/* Wrapper ให้เต็มจอ */}
       <div className="w-full h-full space-y-8">
         {/* ===== แถวบน: 3 กล่อง ===== */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -21,7 +20,7 @@ export default function Home() {
                 <FaCoins className="text-white text-h4 -mt-0.5" />
               </div>
 
-              <div className="text-h3 font-medium text-black tracking-wide">
+              <div className="text-h5 font-medium text-black tracking-wide">
                 999,999,999
               </div>
             </div>
@@ -30,7 +29,7 @@ export default function Home() {
           {/* กล่อง 2 */}
           <div className="rounded-2xl border-2 border-black bg-neutral-100 p-10 shadow-sm">
             <div className="text-center text-black text-h3 font-semibold">
-              จำนวนคอร์ส
+              จำนวนคอร์สทั้งหมด
             </div>
 
             <div className="mt-8 flex items-center justify-center gap-7">
@@ -38,7 +37,7 @@ export default function Home() {
                 <FiBookOpen className="text-white" size={32} />
               </div>
 
-              <div className="text-h3 text-black font-medium tracking-wide">
+              <div className="text-h5 text-black font-medium tracking-wide">
                 12
               </div>
             </div>
@@ -55,7 +54,7 @@ export default function Home() {
                 <FiEye className="text-white" size={32} />
               </div>
 
-              <div className="text-h3 text-black font-medium tracking-wide">
+              <div className="text-h5 text-black font-medium tracking-wide">
                 999,999,999
               </div>
             </div>

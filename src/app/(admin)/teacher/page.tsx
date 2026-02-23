@@ -3,32 +3,46 @@
 import { useRef, useState } from "react";
 import { FiSearch, FiUser } from "react-icons/fi";
 import { GridTeacher, TeacherUser } from "@/components/grid-teacher";
+import { createInstructor, getInstructors } from "@/services/instructor-service";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function TeacherPage() {
-  const mockTeachers = [
-  { id: 1, name: "Maryam Amiri", role: "Designer", avatarUrl: "https://i.pravatar.cc/150?img=1", isFavorite: true },
-  { id: 2, name: "Hossein Shams", role: "Full Stack Developer", avatarUrl: "https://i.pravatar.cc/150?img=12" },
-  { id: 3, name: "Sarah Conner", role: "Support Agent", avatarUrl: "https://i.pravatar.cc/150?img=5" },
-  { id: 4, name: "Frank Camly", role: "Support Agent", avatarUrl: "https://i.pravatar.cc/150?img=8" },
-  { id: 5, name: "Freddie Arendes", role: "Marketing Department", avatarUrl: "https://i.pravatar.cc/150?img=9" },
-  { id: 6, name: "Gary Camara", role: "Marketing Department", avatarUrl: "https://i.pravatar.cc/150?img=15", isFavorite: true },
-  { id: 7, name: "Tim Hank", role: "Marketing Department", avatarUrl: "https://i.pravatar.cc/150?img=11" },
-  { id: 8, name: "Fidel Tonn", role: "Support Agent", avatarUrl: "https://i.pravatar.cc/150?img=20", isFavorite: true },
-  { id: 9, name: "Fidel Tonn", role: "Support Agent", avatarUrl: "https://i.pravatar.cc/150?img=20", isFavorite: true },
-  { id: 10, name: "Fidel Tonn", role: "Support Agent", avatarUrl: "https://i.pravatar.cc/150?img=20", isFavorite: true },
-  { id: 11, name: "KMUTT", role: "Support Agent", avatarUrl: "https://www.youtube.com/@kmuttlive", isFavorite: true },
-];
+  const [teachers, setTeachers] = useState<TeacherUser[]>([]);
+
   const [search, setSearch] = useState("");
   const [openGrid, setOpenGrid] = useState(true);
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [bio, setBio] = useState("");
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const onPickImage = () => fileRef.current?.click();
 
+  const router = useRouter();
+  const [selectedInstructor, setSelectedInstructor] = useState<TeacherUser | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await getInstructors();
+
+        const mapped: TeacherUser[] = data.map((i) => ({
+          id: i.id,
+          name: i.username,
+        }));
+
+        setTeachers(mapped);
+      } catch (err) {
+        console.error("Load instructors failed:", err);
+      }
+    };
+
+    load();
+  }, []);
   
 
   const onChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,16 +53,51 @@ export default function TeacherPage() {
   };
 
   const onSearch = () => {
-    // เปิด grid และใช้ search เป็นคำกรองใน modal
-    setOpenGrid(true);
+    if (!selectedInstructor) {
+      alert("กรุณาเลือกผู้สอนจากรายการก่อน");
+      return;
+    }
+
+    const params = new URLSearchParams();
+    params.set("instructorId", String(selectedInstructor.id));
+    params.set("instructorName", selectedInstructor.name);
+
+    router.push(`/teacher?${params.toString()}`);
   };
 
-  const onSubmit = () => {
-    console.log({ username, email });
+  const onSubmit = async () => {
+    try {
+      const newInstructor = await createInstructor({
+        username,
+        email: email || undefined,
+        bio: bio || undefined,
+        // avatar_url: previewUrl || undefined, // ถ้ายังไม่ได้อัปขึ้น storage อย่าเพิ่งส่ง previewUrl
+      });
+
+      console.log("created:", newInstructor);
+
+      alert("สร้างผู้สอนสำเร็จแล้ว")
+
+      setUsername("");
+      setEmail("");
+      setBio("");
+      setPreviewUrl(null);
+
+      const data = await getInstructors();
+      setTeachers(
+        data.map((i) => ({
+          id: i.id,
+          name: i.username,
+        }))
+      );
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.message ?? "Create instructor failed");
+    }
   };
 
   const onPickTeacher = (u: TeacherUser) => {
-    console.log("picked:", u);
+    setSelectedInstructor(u);
     setSearch(u.name);
   };
 
@@ -109,6 +158,17 @@ export default function TeacherPage() {
                 />
               </div>
 
+              <div className="space-y-3">
+                <label className="block text-xl font-semibold">Bio</label>
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="กรอกชีวประวัติที่นี่"
+                  className="w-full border-2 bg-background rounded-md px-4 py-3 outline-none"
+                  rows={4}
+                />
+              </div>
+
               <div className="flex justify-end">
                 <button
                   type="button"
@@ -141,11 +201,10 @@ export default function TeacherPage() {
             className="px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer transition bg-primary hover:bg-primary/90"
             aria-label="search"
           > เลือก
-            {/* <FiSearch size={20} /> */}
           </button>
         </div>
 
-        <GridTeacher users={mockTeachers} query={search} onPick={onPickTeacher} />
+        <GridTeacher users={teachers} query={search} onPick={onPickTeacher} />
       </div>
     </div>
   );
