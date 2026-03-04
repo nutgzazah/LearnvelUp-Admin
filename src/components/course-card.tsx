@@ -2,57 +2,17 @@
 
 import React from "react";
 import { Course } from "@/types";
+import { Categories } from "@/types/categories";
 
 type CourseCardsProps = {
   courses: Course[];
+  categories: Categories[];
   onClickCourse?: (course: Course) => void;
 };
 
-function getCourseThumb(course: any) {
-  return (
-    course?.thumbnail_url ||
-    course?.thumbnailUrl ||
-    course?.image_url ||
-    course?.imageUrl ||
-    course?.cover_url ||
-    course?.coverUrl ||
-    ""
-  );
-}
-
-function getCourseDesc(course: any) {
-  return (
-    course?.description ||
-    course?.detail ||
-    course?.summary ||
-    course?.short_description ||
-    ""
-  );
-}
-
-function getCourseOwner(course: any) {
-  return course?.owner_name || course?.ownerName || course?.teacher || course?.creator || "";
-}
-
-function getCourseCategories(course: any): string[] {
-  const c = course?.categories ?? course?.category ?? course?.tags ?? [];
-  if (Array.isArray(c)) return c.filter(Boolean).map(String);
-  if (typeof c === "string" && c.trim()) return [c.trim()];
-  return [];
-}
-
-function getStudentCount(course: any) {
-  return (
-    course?.student_count ??
-    course?.studentsCount ??
-    course?.enrolled_count ??
-    course?.enrolledCount ??
-    course?.students ??
-    null
-  );
-}
-
-export function CourseCards({ courses, onClickCourse }: CourseCardsProps) {
+export function CourseCards({ courses,categories, onClickCourse }: CourseCardsProps) {
+  console.log("categories", categories);
+  console.log("course.category_id", courses?.[0]?.category_id);
   if (!courses?.length) {
     return (
       <div className="rounded-2xl border border-dashed p-10 text-center text-muted-foreground">
@@ -63,16 +23,10 @@ export function CourseCards({ courses, onClickCourse }: CourseCardsProps) {
 
   return (
     <div className="max-w-none w-full mx-auto space-y-8 pb-10 px-10">
-      {courses.map((course: any) => {
-        const thumb = getCourseThumb(course);
-        const desc = getCourseDesc(course);
-        const owner = getCourseOwner(course);
-        const cats = getCourseCategories(course);
-        const students = getStudentCount(course);
-
+      {courses.map((course) => { const category = categories?.find((c) => c.id === course.category_id);
         return (
           <button
-            key={course.id ?? course.course_id ?? course.slug ?? course.title}
+            key={course.id}
             type="button"
             onClick={() => onClickCourse?.(course)}
             className={[
@@ -84,71 +38,54 @@ export function CourseCards({ courses, onClickCourse }: CourseCardsProps) {
           >
             <div className="flex flex-col md:flex-row">
               {/* Left image */}
-              <div className="md:w-[420px] w-full bg-slate-100">
-                {thumb ? (
-                  // eslint-disable-next-line @next/next/no-img-element
+              <div className="md:w-[350px] w-full bg-slate-100">
                   <img
-                    src={thumb}
-                    alt={course.title ?? "course"}
+                    src="https://www.shutterstock.com/blog/wp-content/uploads/sites/5/2020/07/trendy-background-ideas-cover.jpg"
+                    alt="w,j0ib'"
                     className="h-[260px] md:h-[300px] w-full object-cover"
                   />
-                ) : (
-                  <div className="h-[260px] w-full flex items-center justify-center text-foreground">
-                    No Image
-                  </div>
-                )}
               </div>
 
               {/* Right content */}
               <div className="flex-1 p-6 relative">
                 <div className="pr-6">
                   <h3 className="text-h4 font-bold text-foreground line-clamp-2">
-                    {course.title ?? course.name ?? "-"}
+                    {course.title}
                   </h3>
 
-                  <div className="mt-3 text-small">
-                    <span className="font-semibold text-primary">รายละเอียด :</span>{" "}
-                    <span className="text-foreground">
-                      {owner ? (
-                        <>
-                          <span className="text-foreground">{owner}</span> คือ
-                        </>
-                      ) : (
-                        "—"
-                      )}
-                    </span>
-                  </div>
-
                   <p className="mt-2 text-body text-foreground line-clamp-2">
-                    {desc || "—"}
+                    <span className="font-semibold text-primary">รายละเอียด : </span>
+                    {course.description ?? "-"}
                   </p>
 
                   {/* Category pills */}
                   <div className="mt-5 flex flex-wrap gap-3">
-                    {cats.length ? (
-                      cats.slice(0, 3).map((tag, i) => (
-                        <span
-                          key={`${tag}-${i}`}
-                          className="inline-flex items-center rounded-full bg-primary px-5 py-2 text-white text-small font-semibold"
-                        >
-                          {tag}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="inline-flex items-center rounded-full bg-primary px-5 py-2 text-white text-small font-semibold">
-                        โปรแกรมมิ่ง
-                      </span>
-                    )}
+                    {[
+                      course.category_id,
+                      course.sub_category_1_id,
+                      course.sub_category_2_id,
+                    ]
+                      .filter(Boolean) // เอาเฉพาะที่ไม่ null
+                      .map((id) => {
+                        const cat = categories.find((c) => c.id === id);
+                        if (!cat) return null;
+
+                        return (
+                          <span
+                            key={id}
+                            className="inline-flex items-center rounded-full bg-primary px-5 py-2 text-white text-small font-semibold"
+                          >
+                            {cat.name} 
+                          </span>
+                        );
+                      })}
                   </div>
                 </div>
 
                 {/* students bottom-right */}
                 <div className="absolute right-6 bottom-5 text-small text-foreground">
                   นักเรียน{" "}
-                  <span className="font-semibold text-foreground">
-                    {typeof students === "number"
-                      ? students.toLocaleString("th-TH")
-                      : "—"}
+                  <span className="font-semibold text-foreground"> {course.total_enrolled ?? "-"}
                   </span>{" "}
                   คน
                 </div>

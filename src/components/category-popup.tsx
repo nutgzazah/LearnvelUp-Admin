@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Categories } from "@/types";
 
 type CategoryPopupProps = {
   open: boolean;
-  categories: string[];
-  defaultSelected?: string[];
+  categories: Categories[];
+  defaultSelected?: number[]; 
   onClose: () => void;
-  onConfirm: (selected: string[]) => void;
+  onConfirm: (selected: number[]) => void;
 };
 
 export function CategoryPopup({
@@ -17,7 +18,7 @@ export function CategoryPopup({
   onClose,
   onConfirm,
 }: CategoryPopupProps) {
-  const [selected, setSelected] = useState<string[]>(defaultSelected);
+  const [selected, setSelected] = useState<number[]>(defaultSelected);
 
   useEffect(() => {
     if (open) setSelected(defaultSelected);
@@ -30,26 +31,23 @@ export function CategoryPopup({
 
   const MAX_SELECT = 2;
 
-  const toggle = (name: string) => {
-    setSelected((prev) => {
-      // ถ้าเลือกอยู่แล้ว → เอาออกได้เสมอ
-      if (prev.includes(name)) {
-        return prev.filter((x) => x !== name);
-      }
+  const toggle = (id: number) => {
+  setSelected((prev) => {
+    if (prev.includes(id)) {
+      return prev.filter((x) => x !== id);
+    }
 
-      // ถ้ายังไม่เลือก แต่ครบ 2 แล้ว → ไม่ให้เพิ่ม
-      if (prev.length >= MAX_SELECT) {
-        return prev;
-      }
+    if (prev.length >= MAX_SELECT) {
+      return prev;
+    }
 
-      // เพิ่มได้ปกติ
-      return [...prev, name];
-    });
-  };
+    return [...prev, id];
+  });
+};
 
-  const toggleAll = () => {
-    setSelected(allSelected ? [] : [...categories]);
-  };
+  // const toggleAll = () => {
+  //   setSelected(allSelected ? [] : [...categories]);
+  // };
 
   if (!open) return null;
 
@@ -72,12 +70,12 @@ export function CategoryPopup({
         {/* chips */}
         <div className="mt-6 flex flex-wrap gap-3">
           {categories.map((c) => {
-            const active = selected.includes(c);
+            const active = selected.includes(c.id);
             return (
               <button
-                key={c}
+                key={c.id}
                 type="button"
-                onClick={() => toggle(c)}
+                onClick={() => toggle(c.id)}
                 className={[
                   "rounded-full border px-6 py-3 text-body transition",
                   active
@@ -85,7 +83,7 @@ export function CategoryPopup({
                     : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
                 ].join(" ")}
               >
-                {c}
+                {c.name}
               </button>
             );
           })}
@@ -93,28 +91,7 @@ export function CategoryPopup({
 
         {/* actions */}
         <div className="mt-8 flex items-center justify-end">
-          {/* <button
-            type="button"
-            onClick={toggleAll}
-            className={[
-              "rounded-full border px-6 py-3 text-body transition",
-              allSelected
-                ? "border-primary bg-white text-primary"
-                : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
-            ].join(" ")}
-          >
-            ทั้งหมด
-          </button> */}
-
-          <div className="flex gap-3">
-            {/* <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full border border-gray-300 px-6 py-3 text-body text-gray-700 hover:bg-gray-50 transition"
-            >
-              ยกเลิก
-            </button> */}
-
+          <div className="flex gap-3"> 
             <button
               type="button"
               onClick={() => onConfirm(selected)}
