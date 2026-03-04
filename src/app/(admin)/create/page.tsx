@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   getCourses,
   createCourse,
@@ -11,6 +10,9 @@ import {
 import { Course, CoursePayload } from "@/types";
 import { FiUploadCloud } from "react-icons/fi";
 import { CategoryPopup } from "@/components/category-popup";
+import { getCategories } from "@/services/categories-service";
+import { Categories } from "@/types";
+import { useRouter, useSearchParams } from "next/navigation";
 
 
 export default function CreatecoursesPage() {
@@ -20,44 +22,46 @@ export default function CreatecoursesPage() {
   const [coverPreview, setCoverPreview] = useState<string>("");
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categoryTarget, setCategoryTarget] = useState<"primary" | "secondary">("primary");
-  const [primaryCategory, setPrimaryCategory] = useState<string>("");
-  const [secondaryCategories, setSecondaryCategories] = useState<string[]>([]);
+  const [primaryCategoryId, setPrimaryCategoryId] = useState<number | null>(null);
+  const [secondaryCategoryIds, setSecondaryCategoryIds] = useState<number[]>([]);
   const router = useRouter();
-
-  const CATEGORY_LIST = [
-    "แพทย์",
-    "วิศว",
-    "ไอที",
-    "วิทยาศาสตร์",
-    "คณิตศาสตร์",
-    "สถิติ",
-    "ธุรกิจ",
-    "บัญชี",
-    "การตลาด",
-    "กฎหมาย",
-    "ภาษา",
-    "จิตวิทยา",
-    "ศิลปะ",
-    "ออกแบบ",
-    "เขียนโปรแกรม",
-    "ทักษะอาชีพ",
-    "การบิน"
-  ];
+  const [categories, setCategories] = useState<Categories[]>([]);
 
   // State for edit mode
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
 
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const idStr = searchParams.get("instructorId");
+    const id = idStr ? Number(idStr) : null;
+
+    if (id && !Number.isNaN(id)) {
+      setForm((prev) => ({
+        ...prev,
+        instructor_id: id,
+      }));
+    }
+  }, [searchParams]);
+
   // State form
   const [form, setForm] = useState<CoursePayload>({
+    instructor_id: null,
+    category_id: null,
+    sub_category_1_id: null,
+    sub_category_2_id: null,
+
     title: "",
     description: "",
-    price: 0,
-    image_url: "",
+    learning_outcome: "",
+    cover_image_url: "",
+
+    price_coins: null,
+    status: "draft", 
   });
 
   // --- Functions ---
-
   const loadData = async () => {
     setLoading(true);
     try {
@@ -77,48 +81,112 @@ export default function CreatecoursesPage() {
 
   // Clear Function
   const resetForm = () => {
-    setForm({ title: "", description: "", price: 0, image_url: "" });
+    const idStr = searchParams.get("instructorId");
+    const id = idStr ? Number(idStr) : null;
+
+    setForm({
+      instructor_id: id && !Number.isNaN(id) ? id : null,
+      category_id: null,
+      sub_category_1_id: null,
+      sub_category_2_id: null,
+
+      title: "",
+      description: "",
+      learning_outcome: "",
+      cover_image_url: "",
+
+      price_coins: null,
+      status: "draft",
+    });
+
     setIsEditing(false);
     setEditId(null);
   };
 
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await getCategories();
+        setCategories(data);
+      } catch (err) {
+        console.error(err);
+        alert("โหลดหมวดหมู่ไม่สำเร็จ");
+      }
+    };
+
+    loadCategories();
+  }, []);
+
+
   // Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || form.price === undefined || form.price < 0) {
+
+    if (
+      !form.title.trim() ||
+      form.price_coins === null ||
+      form.price_coins < 0
+    ) {
       return alert("กรุณากรอกชื่อและราคาให้ถูกต้อง");
+    }
+    if (!form.learning_outcome?.trim()) {
+      return alert("กรุณากรอกผลลัพธ์การเรียนรู้");
     }
 
     try {
-      if (isEditing && editId) {
-        // Edit mode
-        await updateCourse(editId, form);
-        alert("แก้ไขข้อมูลเรียบร้อย!");
-      } else {
-        // Add mode
-        await createCourse(form);
-        alert("เพิ่มคอร์สเรียบร้อย! 🎉");
-      }
+    const instructorId = searchParams.get("instructorId");
+    const instructorName = searchParams.get("instructorName");
 
-      resetForm(); // reset form
-      loadData(); // Load data
-    } catch (error: any) {
-      alert("เกิดข้อผิดพลาด: " + error.message);
+    if (isEditing && editId) {
+      await updateCourse(editId, form);
+      alert("แก้ไขข้อมูลเรียบร้อย!");
+
+      const params = new URLSearchParams();
+      if (instructorId) params.append("instructorId", instructorId);
+      if (instructorName) params.append("instructorName", instructorName);
+      params.append("courseId", String(editId)); // ถ้าอยากส่ง courseId ตอน edit
+
+      router.push(`/create/content?${params.toString()}`);
+    } else {
+      const created = await createCourse(form);
+      alert("เพิ่มคอร์สเรียบร้อย!");
+
+      const newId = created?.[0]?.id;
+
+      const params = new URLSearchParams();
+      if (instructorId) params.append("instructorId", instructorId);
+      if (instructorName) params.append("instructorName", instructorName);
+      if (newId) params.append("courseId", String(newId));
+
+      router.push(`/create/content?${params.toString()}`);
     }
+
+    resetForm();
+    loadData();
+  } catch (error: any) {
+    alert("เกิดข้อผิดพลาด: " + error.message);
+  }
   };
 
   // edit in table
   const handleEdit = (course: Course) => {
     setIsEditing(true);
     setEditId(course.id);
-    // add data to form
-    setForm({
+
+    setForm((prev) => ({
+      ...prev,
       title: course.title,
-      description: course.description || "",
-      price: course.price,
-      image_url: course.image_url || "",
-    });
-    // scroll window to form
+      description: course.description ?? "",
+      learning_outcome: course.learning_outcome ?? "",
+      price_coins: course.price_coins,
+      cover_image_url: course.cover_image_url ?? "",
+      status: course.status ?? prev.status,
+      category_id: course.category_id ?? prev.category_id,
+      sub_category_1_id: course.sub_category_1_id ?? prev.sub_category_1_id,
+      sub_category_2_id: course.sub_category_2_id ?? prev.sub_category_2_id,
+      instructor_id: course.instructor_id ?? prev.instructor_id,
+    }));
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -193,8 +261,8 @@ export default function CreatecoursesPage() {
             <input
               type="text"
               className="w-full p-2 border rounded-lg bg-background"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              value={form.learning_outcome || ""}
+              onChange={(e) => setForm({ ...form, learning_outcome: e.target.value })}
               required
             />
           </div>
@@ -261,7 +329,9 @@ export default function CreatecoursesPage() {
             <input
               type="text"
               className="w-full p-2 border rounded-lg bg-background"
-              value={primaryCategory}
+              value={
+                categories.find((c) => c.id === primaryCategoryId)?.name || ""
+              }
               readOnly
               placeholder="เลือกหมวดหมู่จากปุ่ม"
               required
@@ -274,19 +344,19 @@ export default function CreatecoursesPage() {
 
             <button
               type="button"
-              disabled={!primaryCategory}
+              disabled={!primaryCategoryId}
               onClick={() => {
-                if (!primaryCategory) return; // กันไว้ซ้ำ
+                if (!primaryCategoryId) return;
                 setCategoryTarget("secondary");
                 setCategoryOpen(true);
               }}
-              className={`px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer transition mt-2 mb-6
-                ${primaryCategory ? "bg-primary hover:bg-primary/90" : "bg-gray-400 cursor-not-allowed"}`}
+              className={`px-6 py-2 text-white font-bold rounded-lg shadow-md transition mt-2 mb-6
+                ${primaryCategoryId ? "bg-primary hover:bg-primary/90" : "bg-gray-400 cursor-not-allowed"}`}
             >
               เพิ่มหมวดหมู่
             </button>
 
-            {!primaryCategory && (
+            {!primaryCategoryId && (
               <p className="text-sm text-gray-500 -mt-4 mb-3">
                 * กรุณาเลือกหมวดหมู่หลักก่อน ถึงจะเลือกหมวดหมู่รองได้
               </p>
@@ -295,21 +365,29 @@ export default function CreatecoursesPage() {
             <input
               type="text"
               className="w-full p-2 border rounded-lg bg-background"
-              value={secondaryCategories.join(", ")}
+              value={secondaryCategoryIds
+                .map((id) => categories.find((c) => c.id === id)?.name)
+                .join(", ")
+              }
               readOnly
               placeholder="เลือกหมวดหมู่รองจากปุ่ม"
             />
           </div>
           
           <div className="space-y-1 md:col-span-2">
-              <label className="block text-h6 font-bold mb-4">ราคาคอร์ส</label>
-              <input
-                type="text"
-                className="w-full p-2 border rounded-lg bg-background"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                required
-              />
+            <label className="block text-h6 font-bold mb-4">ราคาคอร์ส</label>
+            <input
+              type="number"
+              min="0"
+              value={form.price_coins ?? ""}
+              className="w-full p-2 border rounded-lg bg-background"
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  price_coins: e.target.value ? Number(e.target.value) : null,
+                })
+              }
+            />
           </div>
           
           <div className="md:col-span-2 text-right mt-2 flex justify-end gap-3">
@@ -325,7 +403,7 @@ export default function CreatecoursesPage() {
 
             <button
               type="submit"
-              onClick={() => router.push("/create/content")}
+              // onClick={() => router.push("/create/content")}
               className="px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer transitionbg-primary bg-primary hover:bg-primary/90">
               ถัดไป
             </button>
@@ -337,27 +415,41 @@ export default function CreatecoursesPage() {
         open={categoryOpen}
         categories={
           categoryTarget === "secondary"
-            ? CATEGORY_LIST.filter((c) => c !== primaryCategory) // กันไม่ให้ซ้ำหมวดหลัก
-            : CATEGORY_LIST
+            ? categories.filter((c) => c.id !== primaryCategoryId)
+            : categories
         }
         defaultSelected={
           categoryTarget === "primary"
-            ? (primaryCategory ? [primaryCategory] : [])
-            : secondaryCategories
+            ? (primaryCategoryId ? [primaryCategoryId] : [])
+            : secondaryCategoryIds
         }
         onClose={() => setCategoryOpen(false)}
         onConfirm={(selected) => {
           if (categoryTarget === "primary") {
-            // หมวดหลักเอาแค่ 1
-            const one = selected[0] ?? "";
-            setPrimaryCategory(one);
+            const one = selected[0] ?? null;
 
-            // ถ้าเคยเลือกหมวดรองแล้วมันดันซ้ำกับหมวดหลักใหม่ -> ลบทิ้ง
-            setSecondaryCategories((prev) => prev.filter((x) => x !== one));
+            setPrimaryCategoryId(one);
+
+            setForm((prev) => ({
+              ...prev,
+              category_id: one,
+            }));
+
+            setSecondaryCategoryIds((prev) =>
+              prev.filter((id) => id !== one)
+            );
           } else {
-            // หมวดรองไม่เกิน 2 และห้ามซ้ำหมวดหลัก
-            const filtered = selected.filter((x) => x !== primaryCategory).slice(0, 2);
-            setSecondaryCategories(filtered);
+            const filtered = selected
+              .filter((id) => id !== primaryCategoryId)
+              .slice(0, 2);
+
+            setSecondaryCategoryIds(filtered);
+
+            setForm((prev) => ({
+              ...prev,
+              sub_category_1_id: filtered[0] ?? null,
+              sub_category_2_id: filtered[1] ?? null,
+            }));
           }
 
           setCategoryOpen(false);
