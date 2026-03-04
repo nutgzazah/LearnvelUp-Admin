@@ -41,6 +41,7 @@ export default function CreatecoursesPage() {
     "ออกแบบ",
     "เขียนโปรแกรม",
     "ทักษะอาชีพ",
+    "การบิน"
   ];
 
   // State for edit mode
