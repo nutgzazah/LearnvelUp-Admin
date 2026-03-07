@@ -1,18 +1,33 @@
 "use client";
 
 import React from "react";
-import { Course } from "@/types";
+import { Course, CourseStatus } from "@/types";
 import { Categories } from "@/types/categories";
 
 type CourseCardsProps = {
   courses: Course[];
   categories: Categories[];
   onClickCourse?: (course: Course) => void;
+  onChangeStatus?: (courseId: number, status: CourseStatus) => void;
 };
 
-export function CourseCards({ courses,categories, onClickCourse }: CourseCardsProps) {
+export function CourseCards({ courses,categories, onClickCourse, onChangeStatus,}: CourseCardsProps) {
   console.log("categories", categories);
   console.log("course.category_id", courses?.[0]?.category_id);
+
+  const getStatusColor = (status: CourseStatus) => {
+    switch (status) {
+      case "published":
+        return "text-green-500";
+      case "draft":
+        return "text-gray-400";
+      case "closed":
+        return "text-red-500";
+      default:
+        return "text-gray-400";
+    }
+  };
+
   if (!courses?.length) {
     return (
       <div className="rounded-2xl border border-dashed p-10 text-center text-muted-foreground">
@@ -20,6 +35,8 @@ export function CourseCards({ courses,categories, onClickCourse }: CourseCardsPr
       </div>
     );
   }
+
+  const STATUS_OPTIONS: CourseStatus[] = ["draft", "published", "closed"];
 
   return (
     <div className="max-w-none w-full mx-auto space-y-8 pb-10 px-10">
@@ -83,11 +100,41 @@ export function CourseCards({ courses,categories, onClickCourse }: CourseCardsPr
                 </div>
 
                 {/* students bottom-right */}
-                <div className="absolute right-6 bottom-5 text-small text-foreground">
-                  นักเรียน{" "}
-                  <span className="font-semibold text-foreground"> {course.total_enrolled ?? "-"}
-                  </span>{" "}
-                  คน
+                <div className="absolute right-6 bottom-5 left-6 flex items-center justify-between text-small text-foreground">
+
+                  {/* LEFT : Course Status */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-small font-semibold text-foreground">
+                      Course Status :
+                    </span>
+                    <span className={`text-sm ${getStatusColor(course.status)}`}>
+                      ●
+                    </span>
+                    <select
+                      value={course.status}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        onChangeStatus?.(course.id, e.target.value as CourseStatus)
+                      }
+                      className="rounded-lg border px-2 py-1 text-xs bg-transparent"
+                    >
+                      {STATUS_OPTIONS.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* RIGHT : Students */}
+                  <div>
+                    นักเรียน{" "}
+                    <span className="font-semibold">
+                      {course.total_enrolled ?? "-"}
+                    </span>{" "}
+                    คน
+                  </div>
+
                 </div>
               </div>
             </div>
