@@ -75,6 +75,25 @@ export function CourseDetail({
   };
 
   const handleDone = () => {
+
+    if (!title.trim()) {
+      alert("กรุณาใส่ชื่อตอน");
+      return;
+    }
+
+    const hasEmptyQuestion = questions.some(q => !q.question.trim());
+    const hasNoCorrect = questions.some(q => q.selectedChoiceKey === null);
+
+    if (hasEmptyQuestion) {
+      alert("กรุณากรอกคำถามให้ครบ");
+      return;
+    }
+
+    if (hasNoCorrect) {
+      alert("กรุณาเลือกคำตอบที่ถูกของทุกคำถาม");
+      return;
+    }
+
     onDone?.({
       title: title.trim(),
       videoFile,

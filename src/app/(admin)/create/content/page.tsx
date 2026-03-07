@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CourseDetail } from "@/components/course-detail";
+import { useSearchParams } from "next/navigation";
+import { createFullChapter } from "@/services/createFullChapterService";
 
 type EpisodePayload = {
   title: string;
@@ -16,6 +18,8 @@ type EpisodePayload = {
 
 export default function ContentPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const courseId = Number(searchParams.get("courseId"));
 
   // จำนวนตอนที่แสดง (เริ่ม 1 ตอน)
   const [episodeCount, setEpisodeCount] = useState(1);
@@ -24,7 +28,8 @@ export default function ContentPage() {
   const [episodesData, setEpisodesData] = useState<Record<number, EpisodePayload>>({});
 
   const addEpisode = () => setEpisodeCount((n) => n + 1);
-
+  
+  
   return (
     <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-20 pr-20">
       {/* Back button */}
@@ -47,14 +52,33 @@ export default function ContentPage() {
             <CourseDetail
               key={episodeNo}
               episodeNo={episodeNo}
-              onDone={(payload) => {
-                console.log("DONE EP:", episodeNo, payload);
+              onDone={async (payload) => {
 
-                // เก็บข้อมูลไว้ใช้ต่อ/ส่ง API ทีหลังได้
-                setEpisodesData((prev) => ({
-                  ...prev,
-                  [episodeNo]: payload,
-                }));
+                try {
+
+                  await createFullChapter({
+                    chapter: {
+                      course_id: courseId,
+                      title: payload.title,
+                      sequence_order: episodeNo,
+                      energy_cost_per_question: 1,
+                      quiz_pass_score: 3,
+                      reward_energy: 0,
+                      reward_xp: 0,
+                      reward_coins: 0,
+                    },
+                    questions: payload.questions,
+                  });
+
+                  setEpisodesData((prev) => ({
+                    ...prev,
+                    [episodeNo]: payload,
+                  }));
+
+                } catch (err) {
+                  console.error(err);
+                }
+
               }}
             />
           );

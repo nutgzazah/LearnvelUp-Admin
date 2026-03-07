@@ -1,4 +1,4 @@
-export type CourseStatus = "draft" | "published" | "archived";
+export type CourseStatus = "draft" | "published" | "closed";
 
 export type Course = {
   id: number;
