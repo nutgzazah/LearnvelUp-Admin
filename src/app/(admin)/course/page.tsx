@@ -4,19 +4,35 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getCourses } from "@/services";
 import { getCategories } from "@/services";
-import { Course } from "@/types";
+import { updateCourse } from "@/services";
+import { Course, CourseStatus } from "@/types";
 import { CourseCards } from "@/components/course-card";
 import { Categories } from "@/types/categories";
 
 export default function CoursesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
+  
   const instructorId = searchParams.get("instructorId");
+  const instructorName = searchParams.get("instructorName");
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Categories[]>([]);
+
+  const handleChangeStatus = async (courseId: number, status: CourseStatus) => {
+  try {
+      await updateCourse(courseId, { status });
+
+      setCourses((prev) =>
+        prev.map((c) =>
+          c.id === courseId ? { ...c, status } : c
+        )
+      );
+    } catch (err) {
+      console.error("update status error", err);
+    }
+  };
   
 
   useEffect(() => {
@@ -52,10 +68,14 @@ export default function CoursesPage() {
         <CourseCards
           courses={courses}
           categories={categories}
+          onChangeStatus={handleChangeStatus}
           onClickCourse={(c: any) => {
             const id = c?.id;
             if (!id) return;
-            router.push(`/course/${id}`);
+
+            router.push(
+              `/course/${id}?instructorId=${instructorId}&instructorName=${instructorName}`
+            );
           }}
         />
       )}
