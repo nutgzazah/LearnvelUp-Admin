@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { ChapterPayload } from "@/types/chapters";
+import { getVideoDurationSeconds, uploadChapterVideo } from "@/services/video-service";
+
 
 type ChoiceKey = "ก" | "ข" | "ค" | "ง";
 
@@ -17,18 +19,43 @@ type QuestionBlock = {
 type CreateFullChapterPayload = {
   chapter: ChapterPayload;
   questions: QuestionBlock[];
+  videoFile?: File | null;
 };
 
 export async function createFullChapter({
   chapter,
   questions,
+  videoFile,
 }: CreateFullChapterPayload) {
+  let finalChapter: ChapterPayload = { ...chapter };
 
-  /* ---------- 1 insert chapter ---------- */
+  if (videoFile) {
+    if (!chapter.course_id) {
+      throw new Error("course_id is required for video upload");
+    }
+
+    if (!chapter.sequence_order) {
+      throw new Error("sequence_order is required for video upload");
+    }
+
+    const durationSeconds = await getVideoDurationSeconds(videoFile);
+
+    const uploaded = await uploadChapterVideo({
+      file: videoFile,
+      courseId: chapter.course_id,
+      episodeNo: chapter.sequence_order,
+    });
+
+    finalChapter = {
+      ...finalChapter,
+      video_url: uploaded.filePath,
+      duration_seconds: durationSeconds,
+    };
+  }
 
   const { data: chapterData, error: chapterError } = await supabase
     .from("chapters")
-    .insert([chapter])
+    .insert([finalChapter])
     .select()
     .single();
 
@@ -38,8 +65,6 @@ export async function createFullChapter({
   }
 
   const chapterId = chapterData.id;
-
-  /* ---------- 2 insert questions ---------- */
 
   for (let qIndex = 0; qIndex < questions.length; qIndex++) {
     const q = questions[qIndex];
@@ -63,8 +88,6 @@ export async function createFullChapter({
     }
 
     const questionId = questionData.id;
-
-    /* ---------- 3 insert answers ---------- */
 
     const answersPayload = q.choices.map((c) => ({
       question_id: questionId,

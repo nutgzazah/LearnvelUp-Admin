@@ -33,3 +33,24 @@ export async function getInstructors(): Promise<Instructor[]> {
 
   return data ?? [];
 }
+
+export async function uploadInstructorAvatar(file: File) {
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${Date.now()}.${fileExt}`;
+
+  const filePath = `profile/${fileName}`;
+
+  const { error } = await supabase.storage
+    .from("images")
+    .upload(filePath, file);
+
+  if (error) {
+    throw error;
+  }
+
+  const { data } = supabase.storage
+    .from("images")
+    .getPublicUrl(filePath);
+
+  return data.publicUrl;
+}

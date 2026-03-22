@@ -20,6 +20,8 @@ export default function ContentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const courseId = Number(searchParams.get("courseId"));
+  const instructorId = searchParams.get("instructorId");
+  const instructorName = searchParams.get("instructorName");
 
   // จำนวนตอนที่แสดง (เริ่ม 1 ตอน)
   const [episodeCount, setEpisodeCount] = useState(1);
@@ -28,6 +30,12 @@ export default function ContentPage() {
   const [episodesData, setEpisodesData] = useState<Record<number, EpisodePayload>>({});
 
   const addEpisode = () => setEpisodeCount((n) => n + 1);
+
+  const onClickUpload = () => {
+    router.push(
+      `/course/${courseId}?instructorId=${instructorId}&instructorName=${instructorName}`
+    );
+  };
   
   
   return (
@@ -68,6 +76,7 @@ export default function ContentPage() {
                       reward_coins: 0,
                     },
                     questions: payload.questions,
+                    videoFile: payload.videoFile,
                   });
 
                   setEpisodesData((prev) => ({
@@ -93,6 +102,15 @@ export default function ContentPage() {
         aria-label="add"
       >
         +
+      </button>
+
+      <button
+        type="button"
+        onClick={onClickUpload}
+        className="px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer transition bg-primary hover:bg-primary/90"
+        aria-label="edit"
+      >
+        อัพโหลด
       </button>
     </div>
   );

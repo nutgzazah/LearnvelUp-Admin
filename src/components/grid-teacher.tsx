@@ -6,6 +6,7 @@ import { FiMoreVertical, FiStar, FiUsers } from "react-icons/fi";
 export type TeacherUser = {
   id: string | number;
   name: string;
+  avatar_url?: string;
 };
 
 type GridTeacherProps = {
@@ -60,8 +61,16 @@ export function GridTeacher({ query = "", users, onPick }: GridTeacherProps) {
 
                 {/* avatar */}
                 <div className="mt-3 flex flex-col items-center">
-                  <div className="h-20 w-20 overflow-hidden rounded-full bg-black/5">
-                    <FiUsers size={36} className="text-black/40" />
+                  <div className="h-20 w-20 overflow-hidden rounded-full bg-black/5 flex items-center justify-center">
+                    {u.avatar_url ? (
+                      <img
+                        src={u.avatar_url}
+                        alt={u.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <FiUsers size={36} className="text-black/40" />
+                    )}
                   </div>
                   <p className="mt-3 text-sm font-semibold">{u.name}</p>
                 </div>
