@@ -6,6 +6,7 @@ import { GridTeacher, TeacherUser } from "@/components/grid-teacher";
 import { createInstructor, getInstructors } from "@/services/instructor-service";
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { uploadInstructorAvatar } from "@/services/instructor-service";
 
 export default function TeacherPage() {
   const [teachers, setTeachers] = useState<TeacherUser[]>([]);
@@ -25,6 +26,8 @@ export default function TeacherPage() {
   const router = useRouter();
   const [selectedInstructor, setSelectedInstructor] = useState<TeacherUser | null>(null);
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -33,6 +36,7 @@ export default function TeacherPage() {
         const mapped: TeacherUser[] = data.map((i) => ({
           id: i.id,
           name: i.username,
+          avatar_url: i.avatar_url,
         }));
 
         setTeachers(mapped);
@@ -48,6 +52,9 @@ export default function TeacherPage() {
   const onChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
+
+    setImageFile(f);
+
     const url = URL.createObjectURL(f);
     setPreviewUrl(url);
   };
@@ -67,14 +74,18 @@ export default function TeacherPage() {
 
   const onSubmit = async () => {
     try {
+      let avatarUrl: string | undefined;
+
+      if (imageFile) {
+        avatarUrl = await uploadInstructorAvatar(imageFile);
+      }
+
       const newInstructor = await createInstructor({
         username,
         email: email || undefined,
         bio: bio || undefined,
-        // avatar_url: previewUrl || undefined, // ถ้ายังไม่ได้อัปขึ้น storage อย่าเพิ่งส่ง previewUrl
+        avatar_url: avatarUrl,
       });
-
-      console.log("created:", newInstructor);
 
       alert("สร้างผู้สอนสำเร็จแล้ว")
 
@@ -82,12 +93,14 @@ export default function TeacherPage() {
       setEmail("");
       setBio("");
       setPreviewUrl(null);
+      setImageFile(null);
 
       const data = await getInstructors();
       setTeachers(
         data.map((i) => ({
           id: i.id,
           name: i.username,
+          avatar_url: i.avatar_url,
         }))
       );
     } catch (err: any) {

@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { getCourseById } from "@/services";
 import { updateChapter } from "@/services";
 
+
 export default function CourseDetailPage() {
 
   const params = useParams<{ id: string }>();
@@ -33,26 +34,33 @@ export default function CourseDetailPage() {
 
   return (
     <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-20 pr-20">
+      
 
       <div>
         <h1 className="text-h2 font-bold text-primary">
-          {course.title}
+          หัวข้อ : {course.title}
         </h1>
 
       </div>
 
       <div className="space-y-6">
 
-        {course.chapters?.map((chapter: any, index: number) => (
-          <CourseEdit
-            key={chapter.id}
-            chapterId={chapter.id}
-            episodeNo={index + 1}
-            title={chapter.title}
-            questions={chapter.questions}
-            onSave={updateChapterHandler}
-          />
-        ))}
+        {course.chapters?.map((chapter: any, index: number) => {
+          console.log("chapter.video_url =", chapter.video_url);
+
+          return (
+            <CourseEdit
+              key={chapter.id}
+              chapterId={chapter.id}
+              courseId={course.id}
+              episodeNo={index + 1}
+              title={chapter.title}
+              videoUrl={chapter.video_url}
+              questions={chapter.questions}
+              onSave={updateChapterHandler}
+            />
+          );
+        })}
 
       </div>
 

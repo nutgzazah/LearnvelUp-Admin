@@ -51,7 +51,7 @@ export default function CoursesPage() {
           );
           setCourses(filtered);
         } else {
-          setCourses(courseRes ?? []);
+          setCourses([]);
         }
       } finally {
         setLoading(false);

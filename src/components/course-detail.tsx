@@ -21,12 +21,12 @@ type CourseDetailProps = {
   defaultTitle?: string;
   defaultVideoUrl?: string;
   episodeNo?: number;
-
+  isSaving?: boolean;
   onDone?: (payload: {
     title: string;
     videoFile: File | null;
     questions: QuestionBlock[];
-  }) => void;
+  }) => Promise<void> | void;
 };
 
 const EMPTY_CHOICES: Choice[] = [
@@ -59,6 +59,8 @@ export function CourseDetail({
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  const [isSaved, setIsSaved] = useState(false);
+
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const videoLabel = useMemo(() => {
@@ -71,21 +73,42 @@ export function CourseDetail({
 
   const onChangeVideo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null;
+
+    if (!f) return;
+
+    if (f.type !== "video/mp4") {
+      alert("กรุณาอัปโหลดไฟล์ .mp4 เท่านั้น");
+      e.target.value = "";
+      return;
+    }
+
     setVideoFile(f);
   };
 
-  const handleDone = () => {
-
+  const handleDone = async () => {
     if (!title.trim()) {
       alert("กรุณาใส่ชื่อตอน");
       return;
     }
 
-    const hasEmptyQuestion = questions.some(q => !q.question.trim());
-    const hasNoCorrect = questions.some(q => q.selectedChoiceKey === null);
+    if (!videoFile && !defaultVideoUrl) {
+      alert("กรุณาอัปโหลดวิดีโอ");
+      return;
+    }
+
+    const hasEmptyQuestion = questions.some((q) => !q.question.trim());
+    const hasNoCorrect = questions.some((q) => q.selectedChoiceKey === null);
+    const hasEmptyChoice = questions.some((q) =>
+      q.choices.some((c) => !c.label.trim())
+    );
 
     if (hasEmptyQuestion) {
       alert("กรุณากรอกคำถามให้ครบ");
+      return;
+    }
+
+    if (hasEmptyChoice) {
+      alert("กรุณากรอกตัวเลือกให้ครบ");
       return;
     }
 
@@ -94,7 +117,7 @@ export function CourseDetail({
       return;
     }
 
-    onDone?.({
+    await onDone?.({
       title: title.trim(),
       videoFile,
       questions: questions.map((q) => ({
@@ -105,6 +128,7 @@ export function CourseDetail({
     });
 
     setIsCollapsed(true);
+    setIsSaved(true);
   };
 
   const setQuestionText = (qIndex: number, value: string) => {
@@ -189,7 +213,7 @@ export function CourseDetail({
           <input
             ref={fileRef}
             type="file"
-            accept="video/*"
+            accept="video/mp4"
             className="hidden"
             onChange={onChangeVideo}
           />
@@ -259,14 +283,26 @@ export function CourseDetail({
 
       {/* ปุ่มเสร็จ */}
       <div className="flex justify-end">
+
+      {!isSaved ? (
         <button
           type="button"
           onClick={handleDone}
-          className="px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer transitionbg-primary bg-primary hover:bg-primary/90"
+          className="px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer bg-primary hover:bg-primary/90"
         >
           เสร็จ
         </button>
-      </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setIsCollapsed(true)}
+          className="px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer bg-gray-500 hover:bg-gray-600"
+        >
+          ย่อ
+        </button>
+      )}
+
+    </div>
 
     </div>
   );

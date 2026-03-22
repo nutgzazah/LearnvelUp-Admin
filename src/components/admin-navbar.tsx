@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { useRouter,usePathname } from "next/navigation";
 import { FiHome, FiBookOpen, FiPlusCircle, FiUsers } from "react-icons/fi";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // สร้าง Client
 const supabase = createClient(
@@ -19,6 +20,7 @@ export function AdminNavbar() {
   const searchParams = useSearchParams();
   const instructorName = searchParams.get("instructorName");
   const instructorId = searchParams.get("instructorId");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -37,6 +39,24 @@ export function AdminNavbar() {
           : "text-white hover:bg-secondary"
     }`;
 
+    useEffect(() => {
+      const loadInstructor = async () => {
+        if (!instructorId) return;
+
+        const { data, error } = await supabase
+          .from("instructors")
+          .select("avatar_url")
+          .eq("id", instructorId)
+          .single();
+
+        if (!error && data) {
+          setAvatarUrl(data.avatar_url);
+        }
+      };
+
+      loadInstructor();
+    }, [instructorId]);
+
 
   return (
   <nav className="fixed left-0 top-0 h-screen w-80 bg-primary text-white shadow-custom flex flex-col">
@@ -47,7 +67,15 @@ export function AdminNavbar() {
     {/* Profile */}
     <div className="mt-6 flex flex-col items-center">
       <div className="w-20 h-20 rounded-full bg-white/15 flex items-center justify-center overflow-hidden">
-        <span className="text-h4">Test</span>
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={instructorName ?? "avatar"}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <span className="text-h4">-</span>
+        )}
       </div>
       <p className="mt-3 text-h4 font-semibold"> {instructorName ?? "-"} </p>
       <p className="text-h6 text-white/70">Admin</p>
