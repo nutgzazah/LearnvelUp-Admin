@@ -126,6 +126,7 @@ export function CourseEdit({
         const localUrl = URL.createObjectURL(videoFile);
         setPreviewVideoUrl(localUrl);
         setVideoLoading(false);
+
         return;
       }
 
@@ -169,7 +170,6 @@ export function CourseEdit({
     const payload = {
       chapter_id: chapterId,
       course_id: courseId,
-      episode_no: episodeNo,
       title,
       videoFile,
       questions: questions.map(q => ({

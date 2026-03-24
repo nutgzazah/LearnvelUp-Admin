@@ -2,7 +2,6 @@ import { supabase } from "@/lib/supabase";
 import { ChapterPayload } from "@/types/chapters";
 import { getVideoDurationSeconds, uploadChapterVideo } from "@/services/video-service";
 
-
 type ChoiceKey = "ก" | "ข" | "ค" | "ง";
 
 type Choice = {
@@ -27,35 +26,19 @@ export async function createFullChapter({
   questions,
   videoFile,
 }: CreateFullChapterPayload) {
-  let finalChapter: ChapterPayload = { ...chapter };
-
-  if (videoFile) {
-    if (!chapter.course_id) {
-      throw new Error("course_id is required for video upload");
-    }
-
-    if (!chapter.sequence_order) {
-      throw new Error("sequence_order is required for video upload");
-    }
-
-    const durationSeconds = await getVideoDurationSeconds(videoFile);
-
-    const uploaded = await uploadChapterVideo({
-      file: videoFile,
-      courseId: chapter.course_id,
-      episodeNo: chapter.sequence_order,
-    });
-
-    finalChapter = {
-      ...finalChapter,
-      video_url: uploaded.filePath,
-      duration_seconds: durationSeconds,
-    };
+  if (!chapter.course_id) {
+    throw new Error("course_id is required");
   }
+
+  const chapterPayload: ChapterPayload = {
+    ...chapter,
+    video_url: null,
+    duration_seconds: null,
+  };
 
   const { data: chapterData, error: chapterError } = await supabase
     .from("chapters")
-    .insert([finalChapter])
+    .insert([chapterPayload])
     .select()
     .single();
 
@@ -65,6 +48,32 @@ export async function createFullChapter({
   }
 
   const chapterId = chapterData.id;
+
+  if (videoFile) {
+    const durationSeconds = await getVideoDurationSeconds(videoFile);
+
+    const uploaded = await uploadChapterVideo({
+      file: videoFile,
+      courseId: chapter.course_id,
+      chapterId: chapterId,
+    });
+
+    const { error: updateChapterError } = await supabase
+      .from("chapters")
+      .update({
+        video_url: uploaded.filePath,
+        duration_seconds: durationSeconds,
+      })
+      .eq("id", chapterId);
+
+    if (updateChapterError) {
+      console.error("chapter video update error", updateChapterError);
+      throw updateChapterError;
+    }
+
+    chapterData.video_url = uploaded.filePath;
+    chapterData.duration_seconds = durationSeconds;
+  }
 
   for (let qIndex = 0; qIndex < questions.length; qIndex++) {
     const q = questions[qIndex];

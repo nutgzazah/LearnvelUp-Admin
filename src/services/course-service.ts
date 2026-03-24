@@ -1,11 +1,10 @@
 import { supabase } from "@/lib/supabase";
 import { Course, CoursePayload } from "@/types/course";
-import { uploadChapterVideo } from "@/services/video-service";
+import { uploadChapterVideo ,getVideoDurationSeconds} from "@/services/video-service";
 
 type UpdateChapterPayload = {
   chapter_id: number;
   course_id: number;
-  episode_no: number;
   title: string;
   videoFile?: File | null;
   questions: {
@@ -94,29 +93,36 @@ export async function getCourseById(id: string) {
 }
 
 export async function updateChapter(payload: UpdateChapterPayload) {
-  const { chapter_id, course_id, episode_no, title, questions, videoFile } = payload;
+  const { chapter_id, course_id, title, questions, videoFile } = payload;
 
   let videoPath: string | undefined;
+  let durationSeconds: number | undefined;
 
   if (videoFile) {
     const uploaded = await uploadChapterVideo({
       file: videoFile,
       courseId: course_id,
-      episodeNo: episode_no,
+      chapterId: chapter_id,
     });
 
     videoPath = uploaded.filePath;
+    durationSeconds = await getVideoDurationSeconds(videoFile);
   }
 
   const updateData: {
     title: string;
     video_url?: string;
+    duration_seconds?: number;
   } = {
     title,
   };
 
   if (videoPath) {
     updateData.video_url = videoPath;
+  }
+
+  if (durationSeconds !== undefined) {
+    updateData.duration_seconds = durationSeconds;
   }
 
   const { error: chapterError } = await supabase

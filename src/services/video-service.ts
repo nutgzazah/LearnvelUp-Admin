@@ -24,15 +24,15 @@ export const getVideoDurationSeconds = (file: File): Promise<number> => {
 type UploadChapterVideoPayload = {
   file: File;
   courseId: number;
-  episodeNo: number;
+  chapterId: number;
 };
 
 export async function uploadChapterVideo({
   file,
   courseId,
-  episodeNo,
+  chapterId,
 }: UploadChapterVideoPayload) {
-  const filePath = `courses/${courseId}/chapters/${episodeNo}.mp4`;
+  const filePath = `courses/${courseId}/chapters/${chapterId}.mp4`;
   const bucket = "videos";
 
   const { error } = await supabase.storage
