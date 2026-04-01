@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { ChapterPayload } from "@/types/chapters";
+import { getVideoDurationSeconds, uploadChapterVideo } from "@/services/video-service";
 
 type ChoiceKey = "ก" | "ข" | "ค" | "ง";
 
@@ -17,18 +18,27 @@ type QuestionBlock = {
 type CreateFullChapterPayload = {
   chapter: ChapterPayload;
   questions: QuestionBlock[];
+  videoFile?: File | null;
 };
 
 export async function createFullChapter({
   chapter,
   questions,
+  videoFile,
 }: CreateFullChapterPayload) {
+  if (!chapter.course_id) {
+    throw new Error("course_id is required");
+  }
 
-  /* ---------- 1 insert chapter ---------- */
+  const chapterPayload: ChapterPayload = {
+    ...chapter,
+    video_url: null,
+    duration_seconds: null,
+  };
 
   const { data: chapterData, error: chapterError } = await supabase
     .from("chapters")
-    .insert([chapter])
+    .insert([chapterPayload])
     .select()
     .single();
 
@@ -39,7 +49,31 @@ export async function createFullChapter({
 
   const chapterId = chapterData.id;
 
-  /* ---------- 2 insert questions ---------- */
+  if (videoFile) {
+    const durationSeconds = await getVideoDurationSeconds(videoFile);
+
+    const uploaded = await uploadChapterVideo({
+      file: videoFile,
+      courseId: chapter.course_id,
+      chapterId: chapterId,
+    });
+
+    const { error: updateChapterError } = await supabase
+      .from("chapters")
+      .update({
+        video_url: uploaded.filePath,
+        duration_seconds: durationSeconds,
+      })
+      .eq("id", chapterId);
+
+    if (updateChapterError) {
+      console.error("chapter video update error", updateChapterError);
+      throw updateChapterError;
+    }
+
+    chapterData.video_url = uploaded.filePath;
+    chapterData.duration_seconds = durationSeconds;
+  }
 
   for (let qIndex = 0; qIndex < questions.length; qIndex++) {
     const q = questions[qIndex];
@@ -63,8 +97,6 @@ export async function createFullChapter({
     }
 
     const questionId = questionData.id;
-
-    /* ---------- 3 insert answers ---------- */
 
     const answersPayload = q.choices.map((c) => ({
       question_id: questionId,

@@ -12,8 +12,6 @@ type CourseCardsProps = {
 };
 
 export function CourseCards({ courses,categories, onClickCourse, onChangeStatus,}: CourseCardsProps) {
-  console.log("categories", categories);
-  console.log("course.category_id", courses?.[0]?.category_id);
 
   const getStatusColor = (status: CourseStatus) => {
     switch (status) {
@@ -57,8 +55,11 @@ export function CourseCards({ courses,categories, onClickCourse, onChangeStatus,
               {/* Left image */}
               <div className="md:w-[350px] w-full bg-slate-100">
                   <img
-                    src="https://www.shutterstock.com/blog/wp-content/uploads/sites/5/2020/07/trendy-background-ideas-cover.jpg"
-                    alt="w,j0ib'"
+                    src={
+                      course.cover_image_url ||
+                      "https://www.shutterstock.com/blog/wp-content/uploads/sites/5/2020/07/trendy-background-ideas-cover.jpg"
+                    }
+                    alt={course.title}
                     className="h-[260px] md:h-[300px] w-full object-cover"
                   />
               </div>

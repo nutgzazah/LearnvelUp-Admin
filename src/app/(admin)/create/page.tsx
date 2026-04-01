@@ -13,6 +13,7 @@ import { CategoryPopup } from "@/components/category-popup";
 import { getCategories } from "@/services/categories-service";
 import { Categories } from "@/types";
 import { useRouter, useSearchParams } from "next/navigation";
+import { uploadCourseCover } from "@/services";
 
 
 export default function CreatecoursesPage() {
@@ -134,6 +135,17 @@ export default function CreatecoursesPage() {
     }
 
     try {
+    let coverUrl = form.cover_image_url;
+
+    if (coverFile) {
+      coverUrl = await uploadCourseCover(coverFile);
+    }
+
+    const payload: CoursePayload = {
+      ...form,
+      cover_image_url: coverUrl,
+    };
+
     const instructorId = searchParams.get("instructorId");
     const instructorName = searchParams.get("instructorName");
 
@@ -148,7 +160,7 @@ export default function CreatecoursesPage() {
 
       router.push(`/create/content?${params.toString()}`);
     } else {
-      const created = await createCourse(form);
+      const created = await createCourse(payload);
       alert("เพิ่มคอร์สเรียบร้อย!");
 
       const newId = created?.[0]?.id;
