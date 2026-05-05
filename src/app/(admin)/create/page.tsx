@@ -126,90 +126,52 @@ export default function CreatecoursesPage() {
     if (
       !form.title.trim() ||
       form.price_coins === null ||
-      form.price_coins < 0
+      form.price_coins < 0 || 
+      form.price_coins > 999
     ) {
       return alert("กรุณากรอกชื่อและราคาให้ถูกต้อง");
     }
     if (!form.learning_outcome?.trim()) {
       return alert("กรุณากรอกผลลัพธ์การเรียนรู้");
     }
-
-    try {
-    let coverUrl = form.cover_image_url;
-
-    if (coverFile) {
-      coverUrl = await uploadCourseCover(coverFile);
-    }
-
-    const payload: CoursePayload = {
-      ...form,
-      cover_image_url: coverUrl,
-    };
-
+    
+  try {
     const instructorId = searchParams.get("instructorId");
     const instructorName = searchParams.get("instructorName");
 
-    if (isEditing && editId) {
-      await updateCourse(editId, form);
-      alert("แก้ไขข้อมูลเรียบร้อย!");
+    const created = await createCourse({
+      ...form,
+      cover_image_url: "",
+    });
 
-      const params = new URLSearchParams();
-      if (instructorId) params.append("instructorId", instructorId);
-      if (instructorName) params.append("instructorName", instructorName);
-      params.append("courseId", String(editId)); // ถ้าอยากส่ง courseId ตอน edit
+    const newId = created?.[0]?.id;
 
-      router.push(`/create/content?${params.toString()}`);
-    } else {
-      const created = await createCourse(payload);
-      alert("เพิ่มคอร์สเรียบร้อย!");
-
-      const newId = created?.[0]?.id;
-
-      const params = new URLSearchParams();
-      if (instructorId) params.append("instructorId", instructorId);
-      if (instructorName) params.append("instructorName", instructorName);
-      if (newId) params.append("courseId", String(newId));
-
-      router.push(`/create/content?${params.toString()}`);
+    if (!newId) {
+      throw new Error("สร้างคอร์สไม่สำเร็จ");
     }
+
+    if (coverFile) {
+      const coverUrl = await uploadCourseCover(coverFile, newId);
+
+      await updateCourse(newId, {
+        cover_image_url: coverUrl,
+      });
+    }
+
+    alert("เพิ่มคอร์สเรียบร้อย!");
+
+    const params = new URLSearchParams();
+    if (instructorId) params.append("instructorId", instructorId);
+    if (instructorName) params.append("instructorName", instructorName);
+    params.append("courseId", String(newId));
 
     resetForm();
     loadData();
+
+    router.push(`/create/content?${params.toString()}`);
   } catch (error: any) {
     alert("เกิดข้อผิดพลาด: " + error.message);
   }
-  };
-
-  // edit in table
-  const handleEdit = (course: Course) => {
-    setIsEditing(true);
-    setEditId(course.id);
-
-    setForm((prev) => ({
-      ...prev,
-      title: course.title,
-      description: course.description ?? "",
-      learning_outcome: course.learning_outcome ?? "",
-      price_coins: course.price_coins,
-      cover_image_url: course.cover_image_url ?? "",
-      status: course.status ?? prev.status,
-      category_id: course.category_id ?? prev.category_id,
-      sub_category_1_id: course.sub_category_1_id ?? prev.sub_category_1_id,
-      sub_category_2_id: course.sub_category_2_id ?? prev.sub_category_2_id,
-      instructor_id: course.instructor_id ?? prev.instructor_id,
-    }));
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm("ยืนยันที่จะลบคอร์สนี้? (กู้คืนไม่ได้นะ)")) return;
-    try {
-      await deleteCourse(id);
-      setCourses((prev) => prev.filter((c) => c.id !== id));
-    } catch (error) {
-      alert("ลบไม่สำเร็จ");
-    }
   };
 
   return (
@@ -270,9 +232,8 @@ export default function CreatecoursesPage() {
 
           <div className="space-y-1 md:col-span-2">
             <label className="block text-h6 font-bold mb-4">ผลลัพธ์การเรียนรู้ *</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded-lg bg-background"
+            <textarea
+              className="w-full p-2 border rounded-lg bg-background h-24"
               value={form.learning_outcome || ""}
               onChange={(e) => setForm({ ...form, learning_outcome: e.target.value })}
               required
@@ -312,11 +273,13 @@ export default function CreatecoursesPage() {
             {/* preview รูป */}
             {coverPreview && (
               <div className="mt-2">
-                <img
-                  src={coverPreview}
-                  alt="cover preview"
-                  className="h-40 w-full object-cover rounded-xl border"
-                />
+                <div className="w-full aspect-[2/1] overflow-hidden rounded-xl border">
+                  <img
+                    src={coverPreview}
+                    alt="cover preview"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
                   ไฟล์: {coverFile?.name}
                 </p>
@@ -387,10 +350,11 @@ export default function CreatecoursesPage() {
           </div>
           
           <div className="space-y-1 md:col-span-2">
-            <label className="block text-h6 font-bold mb-4">ราคาคอร์ส</label>
+            <label className="block text-h6 font-bold mb-4">ราคาคอร์ส (100 - 950) </label>
             <input
               type="number"
-              min="0"
+              min="100"
+              max="950"
               value={form.price_coins ?? ""}
               className="w-full p-2 border rounded-lg bg-background"
               onChange={(e) =>

@@ -6,7 +6,7 @@ import { GridTeacher, TeacherUser } from "@/components/grid-teacher";
 import { createInstructor, getInstructors } from "@/services/instructor-service";
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { uploadInstructorAvatar } from "@/services/instructor-service";
+import { uploadInstructorAvatar, updateInstructorAvatar } from "@/services/instructor-service";
 
 export default function TeacherPage() {
   const [teachers, setTeachers] = useState<TeacherUser[]>([]);
@@ -73,41 +73,40 @@ export default function TeacherPage() {
   };
 
   const onSubmit = async () => {
-    try {
-      let avatarUrl: string | undefined;
+  try {
+    const newInstructor = await createInstructor({
+      username,
+      email: email || undefined,
+      bio: bio || undefined,
+      avatar_url: undefined,
+    });
 
-      if (imageFile) {
-        avatarUrl = await uploadInstructorAvatar(imageFile);
-      }
-
-      const newInstructor = await createInstructor({
-        username,
-        email: email || undefined,
-        bio: bio || undefined,
-        avatar_url: avatarUrl,
-      });
-
-      alert("สร้างผู้สอนสำเร็จแล้ว")
-
-      setUsername("");
-      setEmail("");
-      setBio("");
-      setPreviewUrl(null);
-      setImageFile(null);
-
-      const data = await getInstructors();
-      setTeachers(
-        data.map((i) => ({
-          id: i.id,
-          name: i.username,
-          avatar_url: i.avatar_url,
-        }))
-      );
-    } catch (err: any) {
-      console.error(err);
-      alert(err?.message ?? "Create instructor failed");
+    if (imageFile) {
+      const avatarUrl = await uploadInstructorAvatar(imageFile, newInstructor.id);
+      await updateInstructorAvatar(newInstructor.id, avatarUrl);
     }
-  };
+
+    alert("สร้างผู้สอนสำเร็จแล้ว");
+
+    setUsername("");
+    setEmail("");
+    setBio("");
+    setPreviewUrl(null);
+    setImageFile(null);
+
+    const data = await getInstructors();
+    setTeachers(
+      data.map((i) => ({
+        id: i.id,
+        name: i.username,
+        avatar_url: i.avatar_url,
+      }))
+    );
+  } catch (err: any) {
+    console.error(err);
+    alert(err?.message ?? "Create instructor failed");
+  }
+};
 
   const onPickTeacher = (u: TeacherUser) => {
     setSelectedInstructor(u);
@@ -188,7 +187,7 @@ export default function TeacherPage() {
                   onClick={onSubmit}
                   className="px-6 py-2 text-white font-bold rounded-lg shadow-md cursor-pointer transition bg-primary hover:bg-primary/90"
                 >
-                  ตกลง
+                  สร้าง
                 </button>
               </div>
             </div>
