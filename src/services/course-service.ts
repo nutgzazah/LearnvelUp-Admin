@@ -156,15 +156,16 @@ export async function updateChapter(payload: UpdateChapterPayload) {
   }
 }
 
-export async function uploadCourseCover(file: File) {
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${Date.now()}.${fileExt}`;
-
+export async function uploadCourseCover(file: File, courseId: number) {
+  const fileExt = file.name.split(".").pop() || "png";
+  const fileName = `${courseId}.${fileExt}`;
   const filePath = `courses/${fileName}`;
 
   const { error } = await supabase.storage
     .from("images")
-    .upload(filePath, file);
+    .upload(filePath, file, {
+      upsert: true,
+    });
 
   if (error) throw error;
 

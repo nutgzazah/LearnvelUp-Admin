@@ -11,13 +11,34 @@ import { Categories } from "@/types/categories";
 import { CourseViewCard } from "@/components/courseview-card";
 import { useRef } from "react";
 import { FiChevronDown } from "react-icons/fi";
+import { CommentViewCard } from "@/components/comment-viewer";
+import { CommentWithProfile } from "@/types/comments";
+import { getUnrepliedCommentsByInstructorId } from "@/services/comments-service";
 
 export default function Home() {
   const searchParams = useSearchParams();
   const instructorId = searchParams.get("instructorId");
   const [courses, setCourses] = useState<Course[]>([]);
   const [categories, setCategories] = useState<Categories[]>([]);
-  const listRef = useRef<HTMLDivElement>(null);
+  // const listRef = useRef<HTMLDivElement>(null);
+  const courseListRef = useRef<HTMLDivElement>(null);
+  const commentListRef = useRef<HTMLDivElement>(null);
+
+
+  type CommentWithRelations = CommentWithProfile & {
+    chapters?: {
+      id: number;
+      course_id: number;
+      courses?: {
+        id: number;
+        instructor_id?: number | null;
+        title: string;
+        cover_image_url?: string | null;
+      } | null;
+    } | null;
+  };
+
+  const [comments, setComments] = useState<CommentWithRelations[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,18 +48,40 @@ export default function Home() {
           getCategories(),
         ]);
 
-        setCourses(courseData || []);
+        const fetchedCourses = courseData || [];
+        setCourses(fetchedCourses);
         setCategories(categoryData || []);
+
+        const unrepliedComments =
+          await getUnrepliedCommentsByInstructorId(Number(instructorId));
+        
+        console.log("instructorId:", instructorId);
+        console.log("unrepliedComments:", unrepliedComments);
+
+        setComments(unrepliedComments);
       } catch (err) {
         console.error(err);
       }
     };
 
     fetchData();
-  }, []);
+  }, [instructorId]);
 
-  const handleScroll = () => {
-    listRef.current?.scrollBy({
+  // const handleScroll = () => {
+  //   listRef.current?.scrollBy({
+  //     top: 200,
+  //     behavior: "smooth",
+  //   });
+  // };
+  const handleCourseScroll = () => {
+    courseListRef.current?.scrollBy({
+      top: 200,
+      behavior: "smooth",
+    });
+  };
+
+  const handleCommentScroll = () => {
+    commentListRef.current?.scrollBy({
       top: 200,
       behavior: "smooth",
     });
@@ -119,7 +162,7 @@ export default function Home() {
 
             {/* List (scrollable) */}
             <div
-              ref={listRef}
+              ref={courseListRef}
               className="mt-6 space-y-4 overflow-y-auto max-h-[300px] pr-2"
             >
               {courses.map((course) => (
@@ -135,7 +178,7 @@ export default function Home() {
             {courses.length > 3 && (
               <div className="flex justify-center mt-4">
                 <button
-                  onClick={handleScroll}
+                  onClick={handleCourseScroll}
                   className="p-2 rounded-full hover:bg-black/10 transition text-black"
                 >
                   <FiChevronDown size={24} />
@@ -144,11 +187,38 @@ export default function Home() {
             )}
           </div>
 
-          {/* กล่องขวา */}
           <div className="rounded-2xl border-2 border-black bg-white shadow-sm min-h-[420px] p-6">
-            <h2 className="text-h4 md:text-3xl font-bold text-black text-center">
-              Comment
+            <h2 className="text-h4 md:text-3xl font-bold text-black text-center mb-6">
+              คำถามล่าสุด
             </h2>
+
+            <div
+              ref={commentListRef}
+              className="space-y-4 overflow-y-auto max-h-[300px] pr-2"
+            >
+              {comments.map((comment) => (
+                <CommentViewCard
+                  key={comment.id}
+                  courseTitle={comment.chapters?.courses?.title ?? "ไม่พบชื่อคอร์ส"}
+                  content={comment.content}
+                  username={comment.profiles?.username ?? "ไม่ทราบชื่อ"}
+                  created_at={comment.created_at ?? undefined}
+                  coverImageUrl={comment.chapters?.courses?.cover_image_url ?? null}
+                />
+              ))}
+            </div>
+
+            {/* ปุ่มลูกศร */}
+             {comments.length > 3 && (
+                <div className="flex justify-center mt-4">
+                  <button
+                    onClick={handleCommentScroll}
+                    className="p-2 rounded-full hover:bg-black/10 transition text-black"
+                  >
+                    <FiChevronDown size={24} />
+                  </button>
+                </div>
+              )}
           </div>
 
         </div>

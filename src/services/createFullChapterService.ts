@@ -30,10 +30,30 @@ export async function createFullChapter({
     throw new Error("course_id is required");
   }
 
+  // ดึง price_coins ของคอร์ส
+  const { data: courseData, error: courseError } = await supabase
+    .from("courses")
+    .select("price_coins")
+    .eq("id", chapter.course_id)
+    .single();
+
+  if (courseError) {
+    console.error("course fetch error", courseError);
+    throw courseError;
+  }
+
+  const priceCoins = courseData?.price_coins ?? 0;
+
+  // คำนวณ 10% ของราคา
+  const rewardCoins = Math.floor(priceCoins * 0.1);
+
   const chapterPayload: ChapterPayload = {
     ...chapter,
     video_url: null,
     duration_seconds: null,
+    reward_energy: 2,
+    reward_xp: 20,
+    reward_coins: rewardCoins,
   };
 
   const { data: chapterData, error: chapterError } = await supabase

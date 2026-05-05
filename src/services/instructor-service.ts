@@ -6,7 +6,7 @@ export async function createInstructor(payload: InstructorPayload): Promise<Inst
     username: payload.username.trim(),
     email: payload.email?.trim() || undefined,
     bio: payload.bio?.trim() || undefined,
-    avatar_url: payload.avatar_url?.trim() || undefined,
+    avatar_url: undefined,
   };
 
   if (!clean.username) {
@@ -30,19 +30,19 @@ export async function getInstructors(): Promise<Instructor[]> {
     .order("id", { ascending: false });
 
   if (error) throw error;
-
   return data ?? [];
 }
 
-export async function uploadInstructorAvatar(file: File) {
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${Date.now()}.${fileExt}`;
-
-  const filePath = `profile/${fileName}`;
+export async function uploadInstructorAvatar(file: File, instructorId: number) {
+  const fileExt = file.name.split(".").pop()?.toLowerCase() || "png";
+  const filePath = `profile/${instructorId}.${fileExt}`;
 
   const { error } = await supabase.storage
     .from("images")
-    .upload(filePath, file);
+    .upload(filePath, file, {
+      upsert: true,
+      contentType: file.type || `image/${fileExt}`,
+    });
 
   if (error) {
     throw error;
@@ -53,4 +53,19 @@ export async function uploadInstructorAvatar(file: File) {
     .getPublicUrl(filePath);
 
   return data.publicUrl;
+}
+
+export async function updateInstructorAvatar(
+  instructorId: number,
+  avatarUrl: string
+): Promise<Instructor> {
+  const { data, error } = await supabase
+    .from("instructors")
+    .update({ avatar_url: avatarUrl })
+    .eq("id", instructorId)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return data as Instructor;
 }
