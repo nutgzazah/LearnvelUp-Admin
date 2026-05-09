@@ -70,6 +70,9 @@ export function CourseDetail({
   }, [videoFile, defaultVideoUrl]);
 
   const onPickVideo = () => fileRef.current?.click();
+  const MAX_VIDEO_SIZE_MB = 50;
+  const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024;
+
 
   const onChangeVideo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null;
@@ -79,6 +82,13 @@ export function CourseDetail({
     if (f.type !== "video/mp4") {
       alert("กรุณาอัปโหลดไฟล์ .mp4 เท่านั้น");
       e.target.value = "";
+      return;
+    }
+
+    if (f.size > MAX_VIDEO_SIZE_BYTES) {
+      alert(`กรุณาอัปโหลดวิดีโอขนาดไม่เกิน ${MAX_VIDEO_SIZE_MB} MB`);
+      e.target.value = "";
+      setVideoFile(null);
       return;
     }
 
@@ -207,7 +217,9 @@ export function CourseDetail({
               <FiUpload size={20} />
             </div>
             <p className="text-sm text-foreground/80">{videoLabel}</p>
-            <p className="text-xs text-foreground/60">ความยาวไม่เกิน 3 นาที</p>
+            <p className="text-xs text-foreground/60">
+              รองรับไฟล์ .mp4 ขนาดไม่เกิน 50 MB และความยาวไม่เกิน 3 นาที
+            </p>
           </div>
 
           <input

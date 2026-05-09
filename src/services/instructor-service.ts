@@ -69,3 +69,57 @@ export async function updateInstructorAvatar(
   if (error) throw error;
   return data as Instructor;
 }
+
+export async function getInstructorCourseCount(
+  instructorId: number
+): Promise<number> {
+  if (!instructorId) return 0;
+
+  const { count, error } = await supabase
+    .from("courses")
+    .select("id", { count: "exact", head: true })
+    .eq("instructor_id", instructorId);
+
+  if (error) throw error;
+
+  return count ?? 0;
+}
+
+export type InstructorCoinSummary = {
+  totalCoins: number;
+  totalEnrolled: number;
+  courseCount: number;
+};
+
+export async function getInstructorCoinSummary(
+  instructorId: number
+): Promise<InstructorCoinSummary> {
+  const { data, error } = await supabase
+    .from("courses")
+    .select("id, price_coins, total_enrolled")
+    .eq("instructor_id", instructorId);
+
+  if (error) {
+    console.error("getInstructorCoinSummary error:", error);
+    throw error;
+  }
+
+  const courses = data ?? [];
+
+  const totalCoins = courses.reduce((sum, course) => {
+    const price = Number(course.price_coins ?? 0);
+    const enrolled = Number(course.total_enrolled ?? 0);
+
+    return sum + price * enrolled;
+  }, 0);
+
+  const totalEnrolled = courses.reduce((sum, course) => {
+    return sum + Number(course.total_enrolled ?? 0);
+  }, 0);
+
+  return {
+    totalCoins,
+    totalEnrolled,
+    courseCount: courses.length,
+  };
+}
