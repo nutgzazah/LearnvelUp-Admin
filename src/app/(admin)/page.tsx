@@ -14,6 +14,10 @@ import { FiChevronDown } from "react-icons/fi";
 import { CommentViewCard } from "@/components/comment-viewer";
 import { CommentWithProfile } from "@/types/comments";
 import { getUnrepliedCommentsByInstructorId } from "@/services/comments-service";
+import {
+  getInstructorCourseCount,
+  getInstructorCoinSummary,
+} from "@/services/instructor-service";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -23,6 +27,60 @@ export default function Home() {
   // const listRef = useRef<HTMLDivElement>(null);
   const courseListRef = useRef<HTMLDivElement>(null);
   const commentListRef = useRef<HTMLDivElement>(null);
+
+  const [courseCount, setCourseCount] = useState(0);
+  const [loadingCourseCount, setLoadingCourseCount] = useState(true);
+
+  const [totalCoins, setTotalCoins] = useState(0);
+  const [loadingCoins, setLoadingCoins] = useState(true);
+
+  useEffect(() => {
+    async function loadCourseCount() {
+      if (!instructorId) {
+        setCourseCount(0);
+        setLoadingCourseCount(false);
+        return;
+      }
+
+      try {
+        setLoadingCourseCount(true);
+
+        const count = await getInstructorCourseCount(Number(instructorId));
+        setCourseCount(count);
+      } catch (error) {
+        console.error("Load instructor course count error:", error);
+        setCourseCount(0);
+      } finally {
+        setLoadingCourseCount(false);
+      }
+    }
+
+    loadCourseCount();
+  }, [instructorId]);
+
+  useEffect(() => {
+    async function loadInstructorCoins() {
+      if (!instructorId) {
+        setTotalCoins(0);
+        setLoadingCoins(false);
+        return;
+      }
+
+      try {
+        setLoadingCoins(true);
+
+        const summary = await getInstructorCoinSummary(Number(instructorId));
+        setTotalCoins(summary.totalCoins);
+      } catch (error) {
+        console.error("Load instructor coins error:", error);
+        setTotalCoins(0);
+      } finally {
+        setLoadingCoins(false);
+      }
+    }
+
+    loadInstructorCoins();
+  }, [instructorId]);
 
 
   type CommentWithRelations = CommentWithProfile & {
@@ -67,12 +125,6 @@ export default function Home() {
     fetchData();
   }, [instructorId]);
 
-  // const handleScroll = () => {
-  //   listRef.current?.scrollBy({
-  //     top: 200,
-  //     behavior: "smooth",
-  //   });
-  // };
   const handleCourseScroll = () => {
     courseListRef.current?.scrollBy({
       top: 200,
@@ -86,6 +138,10 @@ export default function Home() {
       behavior: "smooth",
     });
   };
+
+  const totalEnrolled = courses.reduce((sum, course) => {
+    return sum + Number(course.total_enrolled ?? 0);
+  }, 0);
 
   if (!instructorId) {
     return (
@@ -110,31 +166,25 @@ export default function Home() {
             </div>
 
             <div className="mt-8 flex items-center justify-center gap-7">
-              <div className="h-16 w-16 rounded-full bg-black flex items-center justify-center">
-                <FaCoins className="text-white text-h4 -mt-0.5" />
-              </div>
 
-              <div className="text-h5 font-medium text-black tracking-wide">
-                999,999,999
+              <div className="text-h4 font-medium text-black tracking-wide">
+                {loadingCoins ? "..." : `${totalCoins.toLocaleString()} เหรียญ`}
               </div>
             </div>
           </div>
 
           <div className="rounded-2xl border-2 border-black bg-neutral-100 p-10 shadow-sm">
-            <div className="text-center text-black text-h3 font-semibold">
-              จำนวนคอร์สทั้งหมด
-            </div>
-
-            <div className="mt-8 flex items-center justify-center gap-7">
-              <div className="h-16 w-16 rounded-full bg-black flex items-center justify-center">
-                <FiBookOpen className="text-white" size={32} />
+              <div className="text-center text-black text-h3 font-semibold">
+                จำนวนคอร์สทั้งหมด
               </div>
 
-              <div className="text-h5 text-black font-medium tracking-wide">
-                12
+              <div className="mt-8 flex items-center justify-center gap-7">
+
+                <div className="text-h4 text-black font-medium tracking-wide">
+                  {loadingCourseCount ? "..." : courseCount}  คอร์ส
+                </div>
               </div>
-            </div>
-          </div>
+           </div>
 
           <div className="rounded-2xl border-2 border-purple-600 bg-purple-100 p-10 shadow-sm">
             <div className="text-center text-h3 text-black font-semibold">
@@ -142,12 +192,9 @@ export default function Home() {
             </div>
 
             <div className="mt-8 flex items-center justify-center gap-7">
-              <div className="h-16 w-16 rounded-full bg-black flex items-center justify-center">
-                <FiEye className="text-white" size={32} />
-              </div>
 
-              <div className="text-h5 text-black font-medium tracking-wide">
-                999,999,999
+              <div className="text-h4 text-black font-medium tracking-wide">
+                {totalEnrolled.toLocaleString()} คน
               </div>
             </div>
           </div>

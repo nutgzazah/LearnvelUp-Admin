@@ -140,8 +140,8 @@ export default function CourseDetailPage() {
   return (
     <div className="max-w-8xl mx-auto space-y-8 pb-10 pl-20 pr-20">
       <div>
-        <h1 className="text-h2 font-bold text-primary">
-          หัวข้อ : {course.title}
+        <h1 className="text-h2 font-bold">
+          คอร์ส : <span>{course.title}</span>
         </h1>
       </div>
 
